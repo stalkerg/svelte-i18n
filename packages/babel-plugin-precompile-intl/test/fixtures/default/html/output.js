@@ -1,5 +1,5 @@
-import { __interpolate } from "precompile-intl-runtime";
+import { __interpolate } from "@stalkerg/precompile-intl-runtime";
 export default {
   br: "Line with <br> line break",
-  br2: val => `Line with <br> and interpolation ${__interpolate(val)}`
+  br2: (__ctx, __values) => `Line with <br> and interpolation ${__interpolate(__values["val"])}`
 };

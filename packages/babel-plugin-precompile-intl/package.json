@@ -1,28 +1,39 @@
 {
-  "name": "babel-plugin-precompile-intl",
-  "version": "0.5.2",
+  "name": "@stalkerg/babel-plugin-precompile-intl",
+  "version": "1.0.0-alpha.0",
   "description": "Compile translations in ICU message format to invocable functions at build time",
-  "repository": "https://github.com/cibernox/babel-plugin-precompile-intl",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stalkerg/svelte-i18n.git",
+    "directory": "packages/babel-plugin-precompile-intl"
+  },
   "author": {
     "name": "Miguel Camba",
     "email": "miguel.camba@gmail.com"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
-    "build": "tsc",
-    "prepublish": "npm run test",
-    "test": "npm run build && NODE_OPTIONS=--experimental-vm-modules jest test"
+    "build": "node ../../scripts/clean.mjs dist && tsc",
+    "prepublishOnly": "npm run build"
   },
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "Changelog.md"
+  ],
   "main": "dist/index.js",
   "module": "dist/index.js",
   "type": "module",
   "dependencies": {
-    "@babel/core": "^7.0.0-0",
-    "@babel/helper-plugin-utils": "^7.17.0",
-    "@formatjs/icu-messageformat-parser": "^2.1.2"
+    "@babel/helper-plugin-utils": "^8.0.0",
+    "@babel/types": "^8.0.0",
+    "@formatjs/icu-messageformat-parser": "^3.5.16"
   },
   "keywords": [
     "babel-plugin",
@@ -32,16 +43,6 @@
     "i18n"
   ],
   "peerDependencies": {
-    "@babel/core": "^7.0.0-0"
-  },
-  "devDependencies": {
-    "@babel/types": "^7.18.4",
-    "@types/babel__helper-plugin-utils": "^7.10.0",
-    "jest": "^28.1.0",
-    "ts-jest": "^28.0.3",
-    "typescript": "^4.7.2"
-  },
-  "volta": {
-    "node": "16.15.0"
+    "@babel/core": "^8.0.0"
   }
 }

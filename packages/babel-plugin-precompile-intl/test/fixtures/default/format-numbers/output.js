@@ -1,44 +1,46 @@
-import { __number } from "precompile-intl-runtime";
+import { __number } from "@stalkerg/precompile-intl-runtime";
 export default {
   nearby: "Find places near your location",
-  regular: count => `I have ${__number(count)} cats`,
-  customFormat: blackCount => `Almost ${__number(blackCount, "custom")} of them are black.`,
-  percentage: blackCount => `Almost ${__number(blackCount, {
+  regular: (__ctx, __values) => `I have ${__number(__ctx, __values["count"])} cats`,
+  customFormat: (__ctx, __values) => `Almost ${__number(__ctx, __values["blackCount"], "custom")} of them are black.`,
+  percentage: (__ctx, __values) => `Almost ${__number(__ctx, __values["blackCount"], {
     style: "percent"
   })} of them are black.`,
-  percentageWithTwoDecimals: blackCount => `Almost ${__number(blackCount, {
+  percentageWithTwoDecimals: (__ctx, __values) => `Almost ${__number(__ctx, __values["blackCount"], {
     style: "percent",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })} of them are black.`,
-  percentageWithScale: blackCount => `Almost ${__number(blackCount / 0.01, {
+  percentageWithScale: (__ctx, __values) => `Almost ${__number(__ctx, __values["blackCount"] / 0.01, {
     style: "percent",
     maximumFractionDigits: 2
   })} of them are black.`,
-  rounded: price => `The dress I liked was ${__number(price)}`,
-  noDecimals: price => `The dress I liked was ${__number(price, {
+  rounded: (__ctx, __values) => `The dress I liked was ${__number(__ctx, __values["price"], {
+    roundingMode: "ceil"
+  })}`,
+  noDecimals: (__ctx, __values) => `The dress I liked was ${__number(__ctx, __values["price"], {
     maximumFractionDigits: 0
   })}`,
-  currency: balance => `Account balance ${__number(balance, {
+  currency: (__ctx, __values) => `Account balance ${__number(__ctx, __values["balance"], {
     style: "currency",
     currency: "EUR"
   })}`,
-  scientific: distance => `Distance to star ${__number(distance, {
+  scientific: (__ctx, __values) => `Distance to star ${__number(__ctx, __values["distance"], {
     notation: "scientific"
   })}`,
-  scientificSigned: distance => `Distance to star ${__number(distance, {
+  scientificSigned: (__ctx, __values) => `Distance to star ${__number(__ctx, __values["distance"], {
     notation: "scientific",
     signDisplay: "always"
   })}`,
-  engineeringSigned: distance => `Distance to star ${__number(distance, {
+  engineeringSigned: (__ctx, __values) => `Distance to star ${__number(__ctx, __values["distance"], {
     notation: "engineering",
     signDisplay: "always"
   })}`,
-  complexMeasurementUnit: distance => `Distance to destination: ${__number(distance, {
+  complexMeasurementUnit: (__ctx, __values) => `Distance to destination: ${__number(__ctx, __values["distance"], {
     style: "unit",
     unit: "km"
   })}`,
-  bossLevel: initialFee => `${__number(initialFee, {
+  bossLevel: (__ctx, __values) => `${__number(__ctx, __values["initialFee"], {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
     trailingZeroDisplay: "stripIfInteger",

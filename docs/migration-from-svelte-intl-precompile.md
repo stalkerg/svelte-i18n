@@ -1,37 +1,34 @@
 # Migrating from `svelte-intl-precompile`
 
 > [!IMPORTANT]
-> This is a living migration guide for an unreleased refactor. Code examples
-> describe the target API and will be validated against a packed release before
-> the first major version is published.
+> This is a living migration guide for an unreleased alpha. The API examples
+> below match the implementation and have been validated with packed packages
+> in a clean Svelte 5/Vite consumer.
 
 The new library keeps build-time ICU compilation but replaces global Svelte
 stores with a request-scoped Svelte 5 `I18n` instance.
 
 ## Migration summary
 
-| Old API | New API |
-| --- | --- |
-| `init(options)` | `createI18n(options)` or `provideI18n(options)` |
-| `{$t('key')}` | `{i18n.t('key')}` |
-| `{$t('key', { values })}` | `{i18n.t('key', values)}` |
-| `$locale = 'ja'` | `await i18n.setLocale('ja')` |
-| `addMessages(locale, messages)` | `i18n.addMessages(locale, messages)` |
-| `register(locale, loader)` | configure `loaders` on the instance |
-| `waitLocale(locale)` | `await i18n.loadLocale(locale)` |
-| `$date(value)` | `i18n.formatDate(value)` |
-| `$time(value)` | `i18n.formatTime(value)` |
-| `$number(value)` | `i18n.formatNumber(value)` |
-| global `dictionary` store | `i18n.catalogs`/instance methods |
-| global `isLoading` store | `i18n.isLoading` |
+| Old API                         | New API                                         |
+| ------------------------------- | ----------------------------------------------- |
+| `init(options)`                 | `createI18n(options)` or `provideI18n(options)` |
+| `{$t('key')}`                   | `{i18n.t('key')}`                               |
+| `{$t('key', { values })}`       | `{i18n.t('key', values)}`                       |
+| `$locale = 'ja'`                | `await i18n.setLocale('ja')`                    |
+| `addMessages(locale, messages)` | `i18n.addMessages(locale, messages)`            |
+| `register(locale, loader)`      | configure `loaders` on the instance             |
+| `waitLocale(locale)`            | `await i18n.loadLocale(locale)`                 |
+| `$date(value)`                  | `i18n.formatDate(value)`                        |
+| `$time(value)`                  | `i18n.formatTime(value)`                        |
+| `$number(value)`                | `i18n.formatNumber(value)`                      |
+| global `dictionary` store       | `i18n.catalogs`/instance methods                |
+| global `isLoading` store        | `i18n.isLoading`                                |
 
 ## 1. Requirements
 
 The new primary API targets Svelte 5 and runes mode. Svelte 3 and Svelte 4 are
 not supported by the primary entry point.
-
-The final install command will use the published package name. The working name
-is:
 
 ```sh
 npm install @stalkerg/svelte-i18n
@@ -48,10 +45,7 @@ import { defineConfig } from 'vite';
 import precompileIntl from '@stalkerg/svelte-i18n/vite';
 
 export default defineConfig({
-  plugins: [
-    precompileIntl({ locales: 'locales' }),
-    sveltekit()
-  ]
+  plugins: [precompileIntl({ locales: 'locales', mode: 'eager' }), sveltekit()],
 });
 ```
 
@@ -86,10 +80,14 @@ export default defineConfig({
 
   let { data, children } = $props();
 
-  const i18n = provideI18n({
+  const i18n = provideI18n(() => ({
     locale: data.locale,
     fallbackLocale: 'en',
     messages: catalogs
+  }));
+
+  $effect(() => {
+    void i18n.setLocale(data.locale);
   });
 </script>
 
@@ -97,7 +95,10 @@ export default defineConfig({
 ```
 
 Unlike the old `init`, `provideI18n` creates state owned by this component tree.
-It does not modify a process-wide locale during SSR.
+It does not modify a process-wide locale during SSR. The callback form reads
+the initial props without Svelte's `state_referenced_locally` warning. The
+effect keeps the instance in sync if SvelteKit later replaces `data` during
+client-side navigation.
 
 ## 4. Translating in components
 
@@ -160,10 +161,8 @@ the root layout.
 import { getLocaleFromAcceptLanguageHeader } from '@stalkerg/svelte-i18n';
 
 export const load = ({ request }) => ({
-  locale: getLocaleFromAcceptLanguageHeader(
-    request.headers.get('accept-language'),
-    ['en', 'ja']
-  ) ?? 'en'
+  locale:
+    getLocaleFromAcceptLanguageHeader(request.headers.get('accept-language'), ['en', 'ja']) ?? 'en',
 });
 ```
 
@@ -175,10 +174,14 @@ export const load = ({ request }) => ({
 
   let { data, children } = $props();
 
-  const i18n = provideI18n({
+  const i18n = provideI18n(() => ({
     locale: data.locale,
     fallbackLocale: 'en',
     messages: catalogs
+  }));
+
+  $effect(() => {
+    void i18n.setLocale(data.locale);
   });
 </script>
 
@@ -188,6 +191,42 @@ export const load = ({ request }) => ({
 The first major release will document eager SSR as the guaranteed path. Lazy
 SSR will only be documented as stable after its hydration behavior is covered
 by integration tests.
+
+### Lazy client-side loading
+
+Select lazy output in Vite:
+
+```ts
+precompileIntl({ locales: 'locales', mode: 'lazy' });
+```
+
+The virtual module then exposes `loaders` instead of populated `catalogs`:
+
+```svelte
+<script lang="ts">
+  import { provideI18n } from '@stalkerg/svelte-i18n';
+  import en from '$locales/en';
+  import { loaders } from '$locales';
+
+  let { data, children } = $props();
+  const i18n = provideI18n(() => ({
+    locale: 'en',
+    fallbackLocale: 'en',
+    messages: { en },
+    loaders
+  }));
+
+  $effect(() => {
+    void i18n.setLocale(data.locale);
+  });
+</script>
+
+{@render children()}
+```
+
+Keep the fallback locale eager. Until lazy SSR hydration tests are complete,
+use eager mode when the first server response must be rendered in the requested
+locale.
 
 ## 7. Custom formats
 
@@ -200,36 +239,40 @@ const i18n = provideI18n({
   messages: catalogs,
   formats: {
     number: {
-      eur: { style: 'currency', currency: 'EUR' }
+      eur: { style: 'currency', currency: 'EUR' },
     },
     date: {
-      compact: { year: 'numeric', month: 'short', day: 'numeric' }
-    }
-  }
+      compact: { year: 'numeric', month: 'short', day: 'numeric' },
+    },
+  },
 });
 ```
 
 ```svelte
-{i18n.formatNumber(123, { format: 'eur' })}
-{i18n.formatDate(date, { format: 'compact' })}
+{i18n.formatNumber(123, 'eur')}
+{i18n.formatDate(date, 'compact')}
 ```
 
 ## 8. Testing components
 
-Components that call `useI18n()` must be rendered under an i18n context. A test
-helper/provider will be exported for this purpose:
+Components that call `useI18n()` must be rendered under an i18n context. Wrap
+them in a small test-only provider component:
 
-```ts
-const i18n = createI18n({
-  locale: 'en',
-  fallbackLocale: 'en',
-  messages: { en: testMessages }
-});
+```svelte
+<!-- TestProvider.svelte -->
+<script lang="ts">
+  import { provideI18n } from '@stalkerg/svelte-i18n';
+  import Child from './ComponentUnderTest.svelte';
 
-renderWithI18n(MyComponent, { i18n });
+  let { messages } = $props();
+  provideI18n(() => ({ locale: 'en', messages: { en: messages } }));
+</script>
+
+<Child />
 ```
 
-The exact helper name will be finalized with the component-test fixture.
+For pure translation tests, create an isolated instance directly with
+`createI18n(options)`; no component context is required.
 
 ## 9. Removed and intentionally changed behavior
 
@@ -239,8 +282,11 @@ The exact helper name will be finalized with the component-test fixture.
 - `init()` no longer configures a process-wide singleton.
 - Translation values are passed as an object rather than sorted positional
   function arguments.
-- `<html lang>` synchronization is an explicit provider option rather than an
-  unconditional module side effect.
+- The library no longer changes `<html lang>` as an unconditional side effect.
+  Set it explicitly in application code while the optional provider effect is
+  still pending.
+- `registerAll()` is removed. `$locales` now exports `availableLocales`,
+  `catalogs`, and `loaders`.
 - Svelte 3 and Svelte 4 support is not part of the new primary API.
 
 ## Migration checklist

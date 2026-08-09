@@ -1,79 +1,60 @@
-interface Formats {
-    number: Record<string, Intl.NumberFormatOptions>;
-    date: Record<string, Intl.DateTimeFormatOptions>;
-    time: Record<string, Intl.DateTimeFormatOptions>;
+export interface Formats {
+  readonly number: Readonly<Record<string, Intl.NumberFormatOptions>>;
+  readonly date: Readonly<Record<string, Intl.DateTimeFormatOptions>>;
+  readonly time: Readonly<Record<string, Intl.DateTimeFormatOptions>>;
 }
 
-export interface DeepDictionary {
-  [key: string]: DeepDictionary | string | string[]
-}
-export type LocaleDictionaryValue = string | ((...args: any[]) => string)
-export type LocaleDictionary = Record<string, LocaleDictionaryValue>;
-export type Dictionary = Record<string, LocaleDictionary>
+export type PartialFormats = {
+  readonly [Type in keyof Formats]?: Formats[Type];
+};
 
-export interface MessageObject {
-  locale?: string
-  format?: string
-  default?: string
-  values?: Record<string, string | number | Date>
+export interface MessageContext {
+  readonly locale: string;
+  readonly formats: Formats;
 }
 
-export interface MessageObjectWithId extends MessageObject {
-  id: string
+export type MessageValues = Readonly<Record<string, unknown>>;
+export type MessageFunction = (context: MessageContext, values: MessageValues) => string;
+export type Message = string | MessageFunction;
+
+export interface Catalog {
+  readonly [key: string]: Message | Catalog;
 }
 
-export type JsonGetter = (
-  id: string,
-  locale?: string
-) => any
+export type Catalogs = Readonly<Record<string, Catalog>>;
+export type LoadedCatalog = Catalog | { readonly default: Catalog };
+export type MessagesLoader = () => Promise<LoadedCatalog>;
+export type LocaleLoaders = Readonly<Record<string, MessagesLoader | readonly MessagesLoader[]>>;
 
-export type MessageFormatter = (
-  currentLocale: string,
-  id: string | MessageObjectWithId,
-  options?: MessageObject
-) => string
-
-export type TimeFormatter = (
-  currentLocale: string,
-  d: Date | number,
-  options?: IntlFormatterOptions<Intl.DateTimeFormatOptions>
-) => string
-
-export type DateFormatter = (
-  currentLocale: string,
-  d: Date | number,
-  options?: IntlFormatterOptions<Intl.DateTimeFormatOptions>
-) => string
-
-export type NumberFormatter = (
-  currentLocale: string,
-  d: number,
-  options?: IntlFormatterOptions<Intl.NumberFormatOptions>
-) => string
-
-type IntlFormatterOptions<T> = T & {
-  format?: string
-  locale?: string
+export interface I18nOptions {
+  readonly locale: string;
+  readonly fallbackLocale?: string;
+  readonly messages?: Catalogs;
+  readonly loaders?: LocaleLoaders;
+  readonly formats?: PartialFormats;
+  readonly loadingDelay?: number;
+  readonly warnOnMissingMessages?: boolean;
 }
 
-export interface MemoizedIntlFormatter<T, U> {
-  (options?: IntlFormatterOptions<U>): T
+export interface TranslateOptions {
+  readonly locale?: string;
+  readonly default?: string;
 }
 
-export interface MessagesLoader {
-  (): Promise<any>
-}
+export type NumberFormatOptions = Intl.NumberFormatOptions & {
+  readonly format?: string;
+  readonly locale?: string;
+};
+
+export type DateTimeFormatOptions = Intl.DateTimeFormatOptions & {
+  readonly format?: string;
+  readonly locale?: string;
+};
+
 export interface GetClientLocaleOptions {
-  navigator?: boolean;
-  hash?: string;
-  search?: string;
-  pathname?: RegExp;
-  hostname?: RegExp;
-}
-
-export interface ConfigureOptions {
-  fallbackLocale: string
-  initialLocale?: string
-  formats?: Partial<Formats>
-  loadingDelay?: number
+  readonly navigator?: boolean;
+  readonly hash?: string;
+  readonly search?: string;
+  readonly pathname?: RegExp;
+  readonly hostname?: RegExp;
 }

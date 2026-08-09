@@ -1,7 +1,7 @@
-import { __date } from "precompile-intl-runtime";
+import { __date } from "@stalkerg/precompile-intl-runtime";
 export default {
   nearby: "Find places near your location",
-  default: start => `Sale begins ${__date(start)}`,
-  custom: start => `Sale begins ${__date(start, "medium")}`,
-  onlyDate: start => __date(start, "short")
+  default: (__ctx, __values) => `Sale begins ${__date(__ctx, __values["start"])}`,
+  custom: (__ctx, __values) => `Sale begins ${__date(__ctx, __values["start"], "medium")}`,
+  onlyDate: (__ctx, __values) => __date(__ctx, __values["start"], "short")
 };

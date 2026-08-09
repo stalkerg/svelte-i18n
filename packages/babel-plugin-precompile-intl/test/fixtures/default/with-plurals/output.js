@@ -1,29 +1,29 @@
-import { __interpolate, __plural } from "precompile-intl-runtime";
+import { __interpolate, __plural } from "@stalkerg/precompile-intl-runtime";
 export default {
   nearby: "Find places near your location",
-  kilometer: count => `${__interpolate(count)} ${__plural(count, {
+  kilometer: (__ctx, __values) => `${__interpolate(__values["count"])} ${__plural(__ctx, __values["count"], {
     1: "kilometer",
     h: "kilometers"
   })}`,
-  kilometerWithTrailingInterpolation: count => `${__plural(count, {
+  kilometerWithTrailingInterpolation: (__ctx, __values) => `${__plural(__ctx, __values["count"], {
     1: "one kilometer",
-    h: `${count} kilometers`
+    h: `${__values["count"]} kilometers`
   })} to go`,
-  twoDigits: numCats => `Your have ${__plural(numCats, {
+  twoDigits: (__ctx, __values) => `Your have ${__plural(__ctx, __values["numCats"], {
     0: "no cats at all",
     1: "one single cat",
     2: "a couple cats",
     3: "a trio of cats",
     12: "a dozen cats",
-    h: `exactly ${numCats} cats`
+    h: `exactly ${__values["numCats"]} cats`
   })}`,
-  duration: (months, years) => `${__plural(years, {
+  duration: (__ctx, __values) => `${__plural(__ctx, __values["years"], {
     0: "",
     o: "next year",
-    h: `${years} years from now`
-  })}${__plural(months, {
+    h: `${__values["years"]} years from now`
+  })}${__plural(__ctx, __values["months"], {
     0: "",
     o: "and one month",
-    h: `and ${months} months`
+    h: `and ${__values["months"]} months`
   })}`
 };

@@ -1,6 +1,6 @@
-import { __interpolate } from "precompile-intl-runtime";
+import { __interpolate } from "@stalkerg/precompile-intl-runtime";
 export default {
   nearby: "Find places near your location",
-  kilometer: count => `${__interpolate(count)} kilometers`,
-  exactDistance: (cm, km, m) => `${__interpolate(km)}km, ${__interpolate(m)} meters and ${__interpolate(cm)} centimeters`
+  kilometer: (__ctx, __values) => `${__interpolate(__values["count"])} kilometers`,
+  exactDistance: (__ctx, __values) => `${__interpolate(__values["km"])}km, ${__interpolate(__values["m"])} meters and ${__interpolate(__values["cm"])} centimeters`
 };

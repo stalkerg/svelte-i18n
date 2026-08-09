@@ -1,6 +1,6 @@
 # Svelte 5 refactoring plan
 
-Status: active  
+Status: active (M2–M4 implemented; integration and release hardening continue)
 Target: first major release of the autonomous monorepo fork
 
 ## Why this is an architectural migration
@@ -72,10 +72,7 @@ The runtime is split into two layers:
 Compiled messages receive all mutable inputs explicitly:
 
 ```ts
-export type MessageFunction = (
-  context: MessageContext,
-  values: MessageValues
-) => string;
+export type MessageFunction = (context: MessageContext, values: MessageValues) => string;
 ```
 
 No compiled helper may read a global current locale or global format options.
@@ -103,43 +100,43 @@ Performance budgets:
 
 ### M1 — Monorepo baseline
 
-- [ ] Use one root lockfile and workspace dependency graph.
-- [ ] Remove committed tarballs, build output, backups, and nested lockfiles.
-- [ ] Add shared TypeScript, Vitest, formatting, and CI configuration.
-- [ ] Port all existing tests to the shared test runner.
+- [x] Use one root lockfile and workspace dependency graph.
+- [x] Remove committed tarballs, build output, backups, and nested lockfiles.
+- [x] Add shared TypeScript, Vitest, formatting, and CI configuration.
+- [x] Port all existing tests to the shared test runner.
 - [ ] Capture bundle-size and formatting benchmarks before changing behavior.
 
 Exit criteria: one install, build, check, and test command succeeds from root.
 
 ### M2 — Pure runtime
 
-- [ ] Introduce immutable runtime options and explicit `MessageContext`.
-- [ ] Make dictionary lookup accept catalogs and locale explicitly.
-- [ ] Make number/date/time helpers accept explicit context.
-- [ ] Replace global loader queues with an instance-safe loader registry/cache.
-- [ ] Preserve process-wide immutable formatter caches.
-- [ ] Add tests proving two runtime instances cannot affect each other.
+- [x] Introduce immutable runtime options and explicit `MessageContext`.
+- [x] Make dictionary lookup accept catalogs and locale explicitly.
+- [x] Make number/date/time helpers accept explicit context.
+- [x] Replace global loader queues with an instance-safe loader registry/cache.
+- [x] Preserve process-wide immutable formatter caches.
+- [x] Add tests proving two runtime instances cannot affect each other.
 
 Exit criteria: formatting and lookup tests run without `svelte/store`.
 
 ### M3 — Compiler contract v2
 
-- [ ] Generate `(context, values) => string` message functions.
-- [ ] Remove alphabetical positional-argument coupling.
-- [ ] Pass locale and formats explicitly to all generated helpers.
-- [ ] Update compiler snapshots and integration plugin tests.
-- [ ] Add correct ordinal plural handling.
+- [x] Generate `(context, values) => string` message functions.
+- [x] Remove alphabetical positional-argument coupling.
+- [x] Pass locale and formats explicitly to all generated helpers.
+- [x] Update compiler snapshots and integration plugin tests.
+- [x] Add correct ordinal plural handling.
 - [ ] Benchmark the new generated output after minification and compression.
 
 Exit criteria: compiler output contains no dependency on global locale state.
 
 ### M4 — Native Svelte 5 state
 
-- [ ] Implement `I18n` in a `.svelte.ts` module.
-- [ ] Use `$state.raw` for immutable catalog references and overlays.
-- [ ] Add `createI18n`, `provideI18n`, `useI18n`, and `hasI18n`.
-- [ ] Make locale transitions explicit through an async `setLocale` method.
-- [ ] Protect locale loading from stale async completion.
+- [x] Implement `I18n` in a `.svelte.ts` module.
+- [x] Use `$state.raw` for immutable catalog references and overlays.
+- [x] Add `createI18n`, `provideI18n`, `useI18n`, and `hasI18n`.
+- [x] Make locale transitions explicit through an async `setLocale` method.
+- [x] Protect locale loading from stale async completion.
 - [ ] Move `<html lang>` synchronization into an optional browser-side effect.
 
 Exit criteria: the primary entry point contains no Svelte stores or global
@@ -147,10 +144,11 @@ mutable i18n state.
 
 ### M5 — Vite and SvelteKit integration
 
-- [ ] Generate typed `availableLocales`, eager catalogs, and lazy loaders.
-- [ ] Support request-scoped eager catalogs for SSR.
+- [x] Generate typed `availableLocales`, eager catalogs, and lazy loaders.
+- [x] Support request-scoped eager catalogs for SSR.
 - [ ] Define and test the lazy SSR/hydration strategy separately.
 - [ ] Add parallel SSR tests with different locales and artificial delays.
+      (Parallel component-tree isolation is covered; async SSR delays remain.)
 - [ ] Add a current SvelteKit example and Storybook production-build fixture.
 
 Exit criteria: concurrent SSR responses never contain another request's
@@ -160,7 +158,7 @@ locale, and hydration output matches server output.
 
 - [ ] Decide whether a tree-shakeable `/legacy` store adapter is worth keeping.
 - [ ] Generate locale and message-key types.
-- [ ] Validate packed artifacts in a clean consumer project.
+- [x] Validate packed artifacts in a clean Vite/Svelte 5 consumer project.
 - [ ] Run bundle and SSR benchmarks against the baseline.
 - [ ] Finish the migration guide and release checklist.
 - [ ] Publish the first major version with Svelte `^5` as a peer dependency.

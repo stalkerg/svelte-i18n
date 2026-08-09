@@ -1,31 +1,45 @@
 {
-  "name": "precompile-intl-runtime",
-  "version": "0.8.5",
+  "name": "@stalkerg/precompile-intl-runtime",
+  "version": "1.0.0-alpha.0",
   "description": "Runtime helpers to be used in translations precompiled by babel-plugin-precompile-intl",
-  "repository": "https://github.com/cibernox/precompile-intl-runtime",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stalkerg/svelte-i18n.git",
+    "directory": "packages/precompile-intl-runtime"
+  },
   "author": {
     "name": "Miguel Camba",
     "email": "miguel.camba@gmail.com"
   },
   "license": "MIT",
-  "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
-    "test": "TZ=utc jest test",
-    "prepublish": "npm run build"
+  "engines": {
+    "node": ">=22.12"
   },
-  "main": "dist/commonjs/index.js",
+  "scripts": {
+    "build": "node ../../scripts/clean.mjs dist && tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
   "module": "dist/modules/index.js",
   "types": "dist/modules/index.d.ts",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/modules/index.js",
-      "require": "./dist/commonjs/index.js",
+      "types": "./dist/modules/index.d.ts",
       "default": "./dist/modules/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "Changelog.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
-    "svelte": "^3.37.0 || ^4.0.0"
+    "svelte": "^5.0.0"
   },
   "keywords": [
     "helpers",
@@ -33,13 +47,5 @@
     "precompile",
     "runtime",
     "i18n"
-  ],
-  "devDependencies": {
-    "@babel/preset-env": "^7.13.0",
-    "@rollup/plugin-typescript": "^8.3.0",
-    "babel-jest": "^27.3.0",
-    "jest": "^27.3.0",
-    "svelte": "^3.44.0",
-    "typescript": "^4.5.0"
-  }
+  ]
 }

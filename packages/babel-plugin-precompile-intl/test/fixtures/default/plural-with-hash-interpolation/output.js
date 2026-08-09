@@ -1,9 +1,9 @@
-import { __plural } from "precompile-intl-runtime";
+import { __plural } from "@stalkerg/precompile-intl-runtime";
 export default {
   nearby: "Find places near your location",
-  kilometer: count => __plural(count, {
+  kilometer: (__ctx, __values) => __plural(__ctx, __values["count"], {
     o: "just one kilometer",
-    f: `just ${count} kilometres`,
-    h: `${count} kilometers easily`
+    f: `just ${__values["count"]} kilometres`,
+    h: `${__values["count"]} kilometers easily`
   })
 };

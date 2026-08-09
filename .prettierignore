@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+package-lock.json
+packages/babel-plugin-precompile-intl/test/fixtures
+packages/*/CHANGELOG.md
+packages/*/Changelog.md

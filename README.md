@@ -7,11 +7,11 @@ developed and released as one project.
 
 ## Packages
 
-| Workspace | Package | Original repository |
-| --- | --- | --- |
-| `packages/svelte-intl-precompile` | `svelte-intl-precompile` | [cibernox/svelte-intl-precompile](https://github.com/cibernox/svelte-intl-precompile) |
-| `packages/babel-plugin-precompile-intl` | `babel-plugin-precompile-intl` | [cibernox/babel-plugin-precompile-intl](https://github.com/cibernox/babel-plugin-precompile-intl) |
-| `packages/precompile-intl-runtime` | `precompile-intl-runtime` | [cibernox/precompile-intl-runtime](https://github.com/cibernox/precompile-intl-runtime) |
+| Workspace                               | Package                                  | Original repository                                                                               |
+| --------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `packages/svelte-intl-precompile`       | `@stalkerg/svelte-i18n`                  | [cibernox/svelte-intl-precompile](https://github.com/cibernox/svelte-intl-precompile)             |
+| `packages/babel-plugin-precompile-intl` | `@stalkerg/babel-plugin-precompile-intl` | [cibernox/babel-plugin-precompile-intl](https://github.com/cibernox/babel-plugin-precompile-intl) |
+| `packages/precompile-intl-runtime`      | `@stalkerg/precompile-intl-runtime`      | [cibernox/precompile-intl-runtime](https://github.com/cibernox/precompile-intl-runtime)           |
 
 Each original default branch was imported as an unsquashed Git subtree, so its
 commit history remains available in this repository. This is a one-time history
@@ -29,3 +29,17 @@ licensing metadata and license files remain in their respective workspaces.
 
 - [Svelte 5 refactoring plan](docs/svelte5-refactoring-plan.md)
 - [Migration guide from `svelte-intl-precompile`](docs/migration-from-svelte-intl-precompile.md)
+
+## Development
+
+The Svelte 5 refactor is currently an unreleased alpha. From the repository
+root:
+
+```sh
+npm install
+npm run check
+```
+
+`npm run check` builds all three workspaces and runs the shared Vitest suite.
+The runtime, compiler, and Vite integration are versioned together while the
+new contract is being stabilized.

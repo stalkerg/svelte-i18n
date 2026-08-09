@@ -1,11 +1,9 @@
-declare module 'svelte-intl-precompile' {
-  export * from 'precompile-intl-runtime';
-}
+export * from '@stalkerg/precompile-intl-runtime';
 
 declare module '$locales' {
-  /** Registers all locales found in `localesRoot`. */
-  export const registerAll: () => void
+  import type { Catalogs, LocaleLoaders } from '@stalkerg/precompile-intl-runtime';
 
-  /** A list of all locales that will be registered by {@link registerAll()}. */
-  export const availableLocales: string[]
+  export const availableLocales: readonly string[];
+  export const catalogs: Catalogs;
+  export const loaders: LocaleLoaders;
 }

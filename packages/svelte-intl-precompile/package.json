@@ -1,30 +1,49 @@
 {
-  "name": "svelte-intl-precompile",
-  "version": "0.12.3",
+  "name": "@stalkerg/svelte-i18n",
+  "version": "1.0.0-alpha.0",
   "description": "I18n library for Svelte.js that analyzes your keys at build time for max performance and minimal footprint",
   "type": "module",
   "module": "index.js",
+  "types": "index.d.ts",
   "exports": {
     ".": {
+      "types": "./index.d.ts",
       "default": "./index.js"
     },
+    "./vite": {
+      "types": "./vite.d.ts",
+      "default": "./vite.js"
+    },
     "./sveltekit-plugin": {
+      "types": "./sveltekit-plugin.d.ts",
       "default": "./sveltekit-plugin.js"
     },
     "./sveltekit-plugin.js": "./sveltekit-plugin.js",
-    "./sveltekit-plugin.cjs": "./sveltekit-plugin.cjs",
     "./package.json": "./package.json"
   },
   "sideEffects": false,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "vite.js",
+    "vite.d.ts",
+    "sveltekit-plugin.js",
+    "sveltekit-plugin.d.ts",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/cibernox/svelte-intl-precompile"
+    "url": "git+https://github.com/stalkerg/svelte-i18n.git",
+    "directory": "packages/svelte-intl-precompile"
+  },
+  "engines": {
+    "node": ">=22.12"
   },
   "scripts": {
-    "build": "ascjs --no-default ./sveltekit-plugin.js ./sveltekit-plugin.cjs",
-    "prepublish": "npm run build",
-    "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "build": "node --check index.js && node --check vite.js && node --check sveltekit-plugin.js",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "svelte",
@@ -35,15 +54,17 @@
   "author": "Miguel Camba",
   "license": "ISC",
   "dependencies": {
-    "babel-plugin-precompile-intl": "^0.5.2",
-    "js-yaml": "^4.1.0",
+    "@babel/core": "^8.0.1",
+    "@stalkerg/babel-plugin-precompile-intl": "1.0.0-alpha.0",
+    "js-yaml": "^5.2.3",
     "json5": "^2.2.3",
-    "path-starts-with": "^2.0.0",
-    "precompile-intl-runtime": "^0.8.5",
+    "@stalkerg/precompile-intl-runtime": "1.0.0-alpha.0",
     "strip-bom": "^5.0.0"
   },
-  "devDependencies": {
-    "ascjs": "^5.0.1",
-    "vitest": "^0.28.0"
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
   }
 }
