@@ -14,11 +14,14 @@ import type {
   DateTimeFormatOptions,
   Formats,
   I18nOptions,
+  Locale,
   LocaleLoaders,
   Message,
   MessageContext,
+  MessageKey,
   MessageValues,
   NumberFormatOptions,
+  TranslateArguments,
   TranslateOptions,
 } from './types/index.js';
 
@@ -63,12 +66,12 @@ export class I18n {
     this.#messageCaches[this.#locale] = this.#currentMessageCache;
   }
 
-  get locale(): string {
-    return this.#locale;
+  get locale(): Locale {
+    return this.#locale as Locale;
   }
 
-  get fallbackLocale(): string {
-    return this.#fallbackLocale;
+  get fallbackLocale(): Locale | '' {
+    return this.#fallbackLocale as Locale | '';
   }
 
   get isLoading(): boolean {
@@ -79,7 +82,7 @@ export class I18n {
     return this.#error;
   }
 
-  get locales(): string[] {
+  get locales(): Locale[] {
     return [
       ...new Set([
         ...Object.keys(this.#baseCatalogs),
@@ -87,7 +90,7 @@ export class I18n {
         ...Object.keys(this.#overlays),
         ...Object.keys(this.#loaders),
       ]),
-    ].sort();
+    ].sort() as Locale[];
   }
 
   /** Returns shared base catalogs unless this instance has local additions. */
@@ -108,6 +111,7 @@ export class I18n {
     return Object.freeze(catalogs);
   }
 
+  t<Key extends MessageKey>(id: Key, ...args: TranslateArguments<Key>): string;
   t(id: string, values: MessageValues = EMPTY_VALUES, options?: TranslateOptions): string {
     const requestedLocale = options?.locale;
     const locale = requestedLocale ?? this.#locale;
@@ -159,7 +163,7 @@ export class I18n {
     return getTimeFormatter(this.#contextFor(this.#locale), options).format(value);
   }
 
-  addMessages(locale: string, ...partials: readonly Catalog[]): void {
+  addMessages(locale: Locale, ...partials: readonly Catalog[]): void {
     let next = this.#overlays[locale] ?? {};
     for (const partial of partials) next = mergeCatalogs(next, partial);
     this.#overlays = Object.freeze({ ...this.#overlays, [locale]: next });
@@ -167,7 +171,7 @@ export class I18n {
   }
 
   /** Install a complete catalog that was resolved before render or hydration. */
-  setMessages(locale: string, ...catalogs: readonly Catalog[]): void {
+  setMessages(locale: Locale, ...catalogs: readonly Catalog[]): void {
     const [first, ...rest] = catalogs;
     if (!first) return;
     const current = this.#loadedCatalogs[locale];
@@ -178,7 +182,7 @@ export class I18n {
     this.#clearMessageCache();
   }
 
-  async loadLocale(locale = this.#locale): Promise<void> {
+  async loadLocale(locale: Locale = this.#locale as Locale): Promise<void> {
     const active = this.#activeLocaleLoads.get(locale);
     if (active) return active;
 
@@ -197,7 +201,7 @@ export class I18n {
     }
   }
 
-  async setLocale(locale: string): Promise<void> {
+  async setLocale(locale: Locale): Promise<void> {
     if (!locale) throw new Error('[precompile-intl-runtime] "locale" cannot be empty.');
     const generation = ++this.#localeGeneration;
     await this.loadLocale(locale);
@@ -237,7 +241,7 @@ export class I18n {
           if (!configured) return;
           const loaders = Array.isArray(configured) ? configured : [configured];
           const catalogs = await Promise.all(loaders.map(loadCatalog));
-          this.setMessages(locale, ...catalogs);
+          this.setMessages(locale as Locale, ...catalogs);
         }),
       );
     } catch (error) {

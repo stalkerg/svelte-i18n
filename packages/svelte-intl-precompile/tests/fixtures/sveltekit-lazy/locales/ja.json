@@ -1,4 +1,5 @@
 {
   "greeting": "こんにちは {name}",
-  "language": "日本語"
+  "language": "日本語",
+  "items": "{count, plural, one {1 個} other {# 個}}"
 }

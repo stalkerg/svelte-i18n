@@ -22,6 +22,7 @@ licensing metadata and license files remain in their respective workspaces.
 
 - Add native Svelte 5 support.
 - Replace the global runtime design where necessary for safe SvelteKit SSR.
+- Generate locale, message-key, and ICU argument types from catalogs.
 - Upgrade the build, test, and dependency toolchain.
 - Keep compiler, runtime, and framework integration changes atomic.
 

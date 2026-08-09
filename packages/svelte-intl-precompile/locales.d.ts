@@ -1,7 +1,13 @@
 declare module '$locales' {
-  export const availableLocales: readonly string[];
-  export const catalogs: import('@stalkerg/precompile-intl-runtime').Catalogs;
+  export type Locale = import('@stalkerg/precompile-intl-runtime').Locale;
+  export type MessageKey = import('@stalkerg/precompile-intl-runtime').MessageKey;
+  export type MessageValuesFor<Key extends MessageKey> =
+    import('@stalkerg/precompile-intl-runtime').MessageValuesFor<Key>;
+  export const availableLocales: readonly Locale[];
+  export const catalogs: Readonly<
+    Partial<Record<Locale, import('@stalkerg/precompile-intl-runtime').Catalog>>
+  >;
   export const loaders: Readonly<
-    Record<string, import('@stalkerg/precompile-intl-runtime').MessagesLoader>
+    Partial<Record<Locale, () => Promise<import('@stalkerg/precompile-intl-runtime').Catalog>>>
   >;
 }

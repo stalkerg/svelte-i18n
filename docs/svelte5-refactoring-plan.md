@@ -162,7 +162,7 @@ locale, and hydration output matches server output.
 ### M6 — Compatibility and release
 
 - [ ] Decide whether a tree-shakeable `/legacy` store adapter is worth keeping.
-- [ ] Generate locale and message-key types.
+- [x] Generate locale, message-key, and ICU value types.
 - [x] Validate packed artifacts in a clean Vite/Svelte 5 consumer project.
 - [x] Run bundle and SSR benchmarks against the baseline.
 - [x] Finish the migration guide.

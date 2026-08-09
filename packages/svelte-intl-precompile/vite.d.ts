@@ -9,6 +9,8 @@ export interface SvelteI18nPluginOptions {
   locales: string;
   prefix?: string;
   mode?: 'eager' | 'lazy';
+  /** Generated declaration path relative to Vite root. Set to false to disable. */
+  types?: string | false;
   exclude?: RegExp | ((filename: string) => boolean);
   transformers?: Record<string, LocaleTransformer>;
 }

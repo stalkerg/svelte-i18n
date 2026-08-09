@@ -46,6 +46,58 @@ Create `locales/en.json`, `locales/ja.json`, and so on:
 }
 ```
 
+## Generated TypeScript types
+
+Starting Vite or creating a production build generates
+`src/svelte-icu.d.ts`. Commit this file so editors and standalone
+`svelte-check` runs have the same types before Vite starts. If Prettier rewrites
+generated declarations, add the file to `.prettierignore`.
+
+The declaration derives:
+
+- `Locale` from locale filenames;
+- `MessageKey` from flattened catalog keys;
+- `MessageValuesFor<Key>` from ICU arguments;
+- typed `i18n.t()`, locale transitions, `availableLocales`, `catalogs`, and
+  `loaders`.
+
+```ts
+import type { Locale, MessageKey, MessageValuesFor } from '$locales';
+
+const locale: Locale = 'en';
+const key: MessageKey = 'cats';
+const values: MessageValuesFor<'cats'> = { count: 2 };
+
+i18n.t(key, values);
+i18n.t('hello', { name: 'Alex' });
+```
+
+Plural and number arguments are inferred as `number`; date and time arguments
+as `Date | number`; interpolation and select arguments as `unknown` while
+remaining required. Static messages accept no named values.
+
+The output path is relative to the Vite root and can be changed or disabled:
+
+```ts
+precompileIntl({
+  locales: 'locales',
+  types: 'src/generated/i18n.d.ts', // or false
+});
+```
+
+When a SvelteKit load function should preserve a generated locale union, prefer
+`satisfies` over a contextual variable annotation:
+
+```ts
+import type { Locale } from '$locales';
+import type { LayoutServerLoad } from './$types';
+
+export const load = (() => {
+  const locale: Locale = 'en';
+  return { locale };
+}) satisfies LayoutServerLoad;
+```
+
 ## Provide request-scoped state
 
 ```svelte

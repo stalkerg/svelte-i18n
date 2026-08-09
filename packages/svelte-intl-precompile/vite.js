@@ -2,6 +2,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { transformSync } from '@babel/core';
 import buildICUPlugin from '@stalkerg/babel-plugin-precompile-intl';
+import { generateTypeDeclarations } from './typegen.js';
 
 const PACKAGE_NAME = '@stalkerg/svelte-icu';
 const intlPrecompiler = buildICUPlugin(PACKAGE_NAME);
@@ -66,6 +67,7 @@ export default function svelteI18n(localesOrOptions, prefixOrOptions) {
     locales: localesRoot,
     prefix = '$locales',
     mode = 'eager',
+    types = 'src/svelte-icu.d.ts',
     transformers: customTransformers,
     exclude,
   } = options;
@@ -73,7 +75,9 @@ export default function svelteI18n(localesOrOptions, prefixOrOptions) {
     throw new Error('[svelte-icu] "mode" must be either "eager" or "lazy".');
   }
 
-  const resolvedRoot = path.resolve(localesRoot);
+  let resolvedRoot = path.resolve(localesRoot);
+  let typesOutput = types === false ? null : path.resolve(types);
+  let typeWriteSequence = 0;
   const virtualPrefix = `\0${prefix}`;
   const transformers = { ...standardTransformers, ...customTransformers };
   const excludeFile =
@@ -90,6 +94,7 @@ export default function svelteI18n(localesOrOptions, prefixOrOptions) {
     const files = await fs.readdir(resolvedRoot);
     const found = new Set();
     for (const file of files) {
+      if (typesOutput && path.resolve(resolvedRoot, file) === typesOutput) continue;
       if (excludeFile(file)) continue;
       const extension = path.extname(file);
       if (transformers[extension]) found.add(path.basename(file, extension));
@@ -139,7 +144,7 @@ export default function svelteI18n(localesOrOptions, prefixOrOptions) {
     return transformCode(code, { filename });
   }
 
-  async function findLocale(locale) {
+  async function findLocaleSource(locale) {
     if (!/^[\p{L}\p{N}_-]+$/u.test(locale)) {
       throw new Error(`[svelte-icu] Invalid locale name: ${JSON.stringify(locale)}.`);
     }
@@ -150,12 +155,12 @@ export default function svelteI18n(localesOrOptions, prefixOrOptions) {
       const filename = filebase + extension;
       try {
         const content = await fs.readFile(filename, { encoding: 'utf8' });
-        return transformLocale(stripBom(content), {
+        const source = await transform(stripBom(content), {
           filename,
           basename: locale,
-          extension,
-          transform,
+          extname: extension,
         });
+        return { filename, source };
       } catch (error) {
         if (error?.code !== 'ENOENT') throw error;
       }
@@ -163,21 +168,72 @@ export default function svelteI18n(localesOrOptions, prefixOrOptions) {
     throw new Error(`[svelte-icu] No locale file found for ${JSON.stringify(locale)}.`);
   }
 
+  async function findLocale(locale) {
+    const { filename, source } = await findLocaleSource(locale);
+    return transformCode(source, { filename });
+  }
+
+  async function writeTypes(addWatchFile = () => {}) {
+    if (!typesOutput) return;
+    const locales = await availableLocales();
+    const localeModules = await Promise.all(
+      locales.map(async (locale) => {
+        const module = await findLocaleSource(locale);
+        addWatchFile(module.filename);
+        return { locale, ...module };
+      }),
+    );
+    const declaration = generateTypeDeclarations(localeModules, prefix);
+    let current;
+    try {
+      current = await fs.readFile(typesOutput, 'utf8');
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+    if (current === declaration) return;
+
+    await fs.mkdir(path.dirname(typesOutput), { recursive: true });
+    const temporary = `${typesOutput}.${process.pid}.${(typeWriteSequence += 1)}.tmp`;
+    await fs.writeFile(temporary, declaration, 'utf8');
+    await fs.rename(temporary, typesOutput);
+  }
+
   return {
     name: 'svelte-icu',
     enforce: 'pre',
 
+    configResolved(config) {
+      resolvedRoot = path.resolve(config.root, localesRoot);
+      typesOutput = types === false ? null : path.resolve(config.root, types);
+    },
+
+    async buildStart() {
+      await writeTypes((filename) => this.addWatchFile(filename));
+    },
+
     configureServer(server) {
       const { moduleGraph, watcher, ws } = server;
-      watcher.on('change', (filename) => {
+      let pendingTypes = Promise.resolve();
+      const refreshTypes = () => {
+        pendingTypes = pendingTypes
+          .then(() => writeTypes((filename) => watcher.add(filename)))
+          .catch((error) => server.config.logger.error(error.stack ?? String(error)));
+      };
+      refreshTypes();
+
+      const handleLocaleFile = (filename) => {
         if (!isWithin(resolvedRoot, path.resolve(filename))) return;
+        refreshTypes();
         const locale = path.basename(filename, path.extname(filename));
         const localeModule = moduleGraph.getModuleById(`${virtualPrefix}/${locale}`);
         if (localeModule) moduleGraph.invalidateModule(localeModule);
         const prefixModule = moduleGraph.getModuleById(virtualPrefix);
         if (prefixModule) moduleGraph.invalidateModule(prefixModule);
         ws.send({ type: 'full-reload', path: '*' });
-      });
+      };
+      watcher.on('add', handleLocaleFile);
+      watcher.on('change', handleLocaleFile);
+      watcher.on('unlink', handleLocaleFile);
     },
 
     resolveId(id) {

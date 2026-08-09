@@ -31,6 +31,11 @@ export function getLocaleFromHash(hash: string): string | null {
   return getFromQueryString(window.location.hash.slice(1), hash);
 }
 
+export function getLocaleFromAcceptLanguageHeader<const AvailableLocales extends readonly string[]>(
+  header: string | null,
+  availableLocales: AvailableLocales,
+): AvailableLocales[number] | undefined;
+export function getLocaleFromAcceptLanguageHeader(header: string | null): string | undefined;
 export function getLocaleFromAcceptLanguageHeader(
   header: string | null,
   availableLocales?: readonly string[],

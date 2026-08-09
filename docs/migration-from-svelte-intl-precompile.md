@@ -100,6 +100,27 @@ the initial props without Svelte's `state_referenced_locally` warning. The
 effect keeps the instance in sync if SvelteKit later replaces `data` during
 client-side navigation.
 
+### Generated types
+
+The Vite plugin generates `src/svelte-icu.d.ts` from all locale files. Commit
+the generated declaration so `svelte-check` and editors can use it before a
+Vite dev server starts. It provides `Locale`, `MessageKey`, and
+`MessageValuesFor<Key>` and narrows `i18n.t()` automatically:
+
+```ts
+import type { Locale, MessageKey, MessageValuesFor } from '$locales';
+
+const locale: Locale = 'en';
+const key: MessageKey = 'welcome';
+const values: MessageValuesFor<'welcome'> = { name: 'Alex' };
+
+i18n.t(key, values);
+```
+
+After adding or removing locale messages, start Vite or run a production build
+and commit the updated declaration. The default path can be changed with the
+plugin's `types` option or generation can be disabled with `types: false`.
+
 ## 4. Translating in components
 
 ### Before
@@ -159,12 +180,22 @@ the root layout.
 ```ts
 // +layout.server.ts
 import { getLocaleFromAcceptLanguageHeader } from '@stalkerg/svelte-icu';
+import type { Locale } from '$locales';
+import type { LayoutServerLoad } from './$types';
 
-export const load = ({ request }) => ({
-  locale:
-    getLocaleFromAcceptLanguageHeader(request.headers.get('accept-language'), ['en', 'ja']) ?? 'en',
-});
+const supportedLocales = ['en', 'ja'] as const satisfies readonly Locale[];
+
+export const load = (({ request }) => {
+  const locale: Locale =
+    getLocaleFromAcceptLanguageHeader(request.headers.get('accept-language'), supportedLocales) ??
+    'en';
+  return { locale };
+}) satisfies LayoutServerLoad;
 ```
+
+Using `satisfies` preserves the generated locale union in SvelteKit's inferred
+layout data. A direct `const load: LayoutServerLoad = ...` annotation may widen
+the returned locale to `string`.
 
 ```svelte
 <!-- +layout.svelte -->
@@ -328,6 +359,8 @@ For pure translation tests, create an isolated instance directly with
 - [ ] Replace `$t(...)` with `i18n.t(...)`.
 - [ ] Replace `$locale = value` with `i18n.setLocale(value)`.
 - [ ] Move custom formats and runtime messages to the instance.
+- [ ] Generate and commit `src/svelte-icu.d.ts`.
+- [ ] Fix newly reported unknown locale, message key, and ICU value errors.
 - [ ] Ensure SvelteKit `load` returns data and does not mutate i18n state.
 - [ ] In lazy mode, load compiled catalogs in universal `+layout.ts`, not
       `+layout.server.ts`.

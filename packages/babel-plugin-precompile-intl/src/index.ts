@@ -42,6 +42,47 @@ type PropertyTuple = [Identifier | StringLiteral, unknown];
 const CONTEXT_IDENTIFIER = '__ctx';
 const VALUES_IDENTIFIER = '__values';
 
+export type MessageArgumentType = 'unknown' | 'number' | 'date';
+
+/** Analyze the values required by an ICU message without generating code. */
+export function analyzeMessage(
+  message: string,
+): Readonly<Record<string, readonly MessageArgumentType[]>> {
+  const argumentsByName = new Map<string, Set<MessageArgumentType>>();
+
+  function add(name: string, type: MessageArgumentType): void {
+    let types = argumentsByName.get(name);
+    if (!types) {
+      types = new Set();
+      argumentsByName.set(name, types);
+    }
+    types.add(type);
+  }
+
+  function visit(elements: readonly MessageFormatElement[]): void {
+    for (const element of elements) {
+      if (isArgumentElement(element)) {
+        add(element.value, 'unknown');
+      } else if (isNumberElement(element) || isPluralElement(element)) {
+        add(element.value, 'number');
+      } else if (isDateElement(element) || isTimeElement(element)) {
+        add(element.value, 'date');
+      } else if (isSelectElement(element)) {
+        add(element.value, 'unknown');
+      }
+
+      if (isPluralElement(element) || isSelectElement(element)) {
+        for (const option of Object.values(element.options)) visit(option.value);
+      }
+    }
+  }
+
+  visit(parse(message, { ignoreTag: true }));
+  return Object.fromEntries(
+    [...argumentsByName.entries()].map(([name, types]) => [name, [...types].sort()]),
+  );
+}
+
 const HELPERS: Record<TYPE, HelperFunction> = {
   0: '__interpolate',
   1: '__interpolate',

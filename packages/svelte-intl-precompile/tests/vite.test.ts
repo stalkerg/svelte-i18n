@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -11,7 +11,13 @@ beforeAll(async () => {
   await Promise.all([
     writeFile(
       join(localesRoot, 'en.json'),
-      JSON.stringify({ simple: 'Simple string', interpolated: 'Hello {value}' }),
+      JSON.stringify({
+        simple: 'Simple string',
+        interpolated: 'Hello {value}',
+        items: '{count, plural, one {One item} other {# items}}',
+        published: 'Published {value, date, medium}',
+        nested: { title: 'Nested title' },
+      }),
     ),
     writeFile(join(localesRoot, 'en-US.json'), JSON.stringify({ simple: 'US English' })),
     writeFile(
@@ -31,6 +37,20 @@ async function resolveAndLoad(plugin: ReturnType<typeof svelteI18n>, id: string)
   const resolveId = plugin.resolveId as (id: string) => string;
   const load = plugin.load as (id: string) => string | Promise<string>;
   return load(resolveId(id));
+}
+
+async function emitTypes(options: Parameters<typeof svelteI18n>[0]) {
+  const output = join(
+    localesRoot,
+    'generated-types',
+    `generated-${Math.random().toString(36).slice(2)}.d.ts`,
+  );
+  const plugin = svelteI18n({ ...options, types: output });
+  const configResolved = plugin.configResolved as (config: { root: string }) => void;
+  const buildStart = plugin.buildStart as (this: { addWatchFile: () => void }) => Promise<void>;
+  configResolved({ root: localesRoot });
+  await buildStart.call({ addWatchFile() {} });
+  return readFile(output, 'utf8');
 }
 
 describe('virtual locale modules', () => {
@@ -60,7 +80,8 @@ describe('virtual locale modules', () => {
     const plugin = svelteI18n({ locales: localesRoot });
     const code = await resolveAndLoad(plugin, '$locales/en');
 
-    expect(code).toContain('import { __interpolate } from "@stalkerg/svelte-icu";');
+    expect(code).toContain('__interpolate');
+    expect(code).toContain('from "@stalkerg/svelte-icu";');
     expect(code).toContain(
       '"interpolated": (__ctx, __values) => `Hello ${__interpolate(__values["value"])}`',
     );
@@ -78,5 +99,24 @@ describe('virtual locale modules', () => {
     await expect(resolveAndLoad(plugin, '$locales/../secret')).rejects.toThrow(
       'Invalid locale name',
     );
+  });
+
+  it('generates locale, message-key, and ICU value registries', async () => {
+    const declaration = await emitTypes({ locales: localesRoot });
+
+    expect(declaration).toContain('readonly "en": true;');
+    expect(declaration).toContain('readonly "en-US": true;');
+    expect(declaration).toContain(
+      'readonly "simple": import("@stalkerg/precompile-intl-runtime").NoMessageValues;',
+    );
+    expect(declaration).toContain('readonly "nested.title"');
+    expect(declaration).toContain('readonly "count": number;');
+    expect(declaration).toContain('readonly "value": Date | number;');
+  });
+
+  it('declares a custom virtual module prefix', async () => {
+    const declaration = await emitTypes({ locales: localesRoot, prefix: '$translations' });
+    expect(declaration).toContain('declare module "$translations"');
+    expect(declaration).toContain('export const availableLocales: readonly Locale[];');
   });
 });

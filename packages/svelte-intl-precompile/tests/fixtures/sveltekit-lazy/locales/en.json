@@ -1,4 +1,5 @@
 {
   "greeting": "Hello {name}",
-  "language": "English"
+  "language": "English",
+  "items": "{count, plural, one {One item} other {# items}}"
 }

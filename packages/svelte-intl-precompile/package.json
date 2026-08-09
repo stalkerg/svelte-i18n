@@ -26,6 +26,7 @@
     "index.js",
     "index.d.ts",
     "locales.d.ts",
+    "typegen.js",
     "vite.js",
     "vite.d.ts",
     "sveltekit-plugin.js",
@@ -43,7 +44,7 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "build": "node --check index.js && node --check vite.js && node --check sveltekit-plugin.js",
+    "build": "node --check index.js && node --check vite.js && node --check typegen.js && node --check sveltekit-plugin.js",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

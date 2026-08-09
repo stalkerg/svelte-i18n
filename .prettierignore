@@ -5,3 +5,4 @@ package-lock.json
 packages/babel-plugin-precompile-intl/test/fixtures
 packages/*/CHANGELOG.md
 packages/*/Changelog.md
+**/src/svelte-icu.d.ts
