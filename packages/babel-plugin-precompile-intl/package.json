@@ -4,7 +4,7 @@
   "description": "Compile translations in ICU message format to invocable functions at build time",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stalkerg/svelte-i18n.git",
+    "url": "git+https://github.com/stalkerg/svelte-icu.git",
     "directory": "packages/babel-plugin-precompile-intl"
   },
   "author": {

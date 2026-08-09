@@ -31,7 +31,7 @@ component-tree/request-scoped mutable data
 
 ```svelte
 <script lang="ts">
-  import { provideI18n } from '@stalkerg/svelte-i18n';
+  import { provideI18n } from '@stalkerg/svelte-icu';
 
   let { data, children } = $props();
 
@@ -47,7 +47,7 @@ component-tree/request-scoped mutable data
 
 ```svelte
 <script lang="ts">
-  import { useI18n } from '@stalkerg/svelte-i18n';
+  import { useI18n } from '@stalkerg/svelte-icu';
 
   const i18n = useI18n();
 </script>
@@ -56,8 +56,7 @@ component-tree/request-scoped mutable data
 <button onclick={() => i18n.setLocale('ja')}>Japanese</button>
 ```
 
-The final package name will be confirmed before publishing. Documentation uses
-`@stalkerg/svelte-i18n` as the working name.
+The public package name is `@stalkerg/svelte-icu`.
 
 ## Runtime contract
 

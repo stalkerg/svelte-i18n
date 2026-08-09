@@ -1,7 +1,7 @@
 # @stalkerg/babel-plugin-precompile-intl
 
 Babel 8 plugin that compiles ICU messages to functions for
-`@stalkerg/svelte-i18n`.
+`@stalkerg/svelte-icu`.
 
 ```js
 import buildPlugin from '@stalkerg/babel-plugin-precompile-intl';

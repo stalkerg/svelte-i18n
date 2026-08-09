@@ -1,4 +1,4 @@
-# svelte-i18n
+# svelte-icu
 
 Independent monorepo continuation of the `svelte-intl-precompile` project and
 its two companion packages. The original repositories are consolidated here so
@@ -9,7 +9,7 @@ developed and released as one project.
 
 | Workspace                               | Package                                  | Original repository                                                                               |
 | --------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `packages/svelte-intl-precompile`       | `@stalkerg/svelte-i18n`                  | [cibernox/svelte-intl-precompile](https://github.com/cibernox/svelte-intl-precompile)             |
+| `packages/svelte-intl-precompile`       | `@stalkerg/svelte-icu`                   | [cibernox/svelte-intl-precompile](https://github.com/cibernox/svelte-intl-precompile)             |
 | `packages/babel-plugin-precompile-intl` | `@stalkerg/babel-plugin-precompile-intl` | [cibernox/babel-plugin-precompile-intl](https://github.com/cibernox/babel-plugin-precompile-intl) |
 | `packages/precompile-intl-runtime`      | `@stalkerg/precompile-intl-runtime`      | [cibernox/precompile-intl-runtime](https://github.com/cibernox/precompile-intl-runtime)           |
 

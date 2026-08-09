@@ -1,4 +1,4 @@
-# @stalkerg/svelte-i18n
+# @stalkerg/svelte-icu
 
 Native Svelte 5 internationalization with ICU messages compiled at build time.
 This is the autonomous, request-safe continuation of
@@ -19,7 +19,7 @@ change each other's language.
 ## Install
 
 ```sh
-npm install @stalkerg/svelte-i18n
+npm install @stalkerg/svelte-icu
 ```
 
 Svelte `^5.0.0` is required.
@@ -30,7 +30,7 @@ Svelte `^5.0.0` is required.
 // vite.config.ts
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import precompileIntl from '@stalkerg/svelte-i18n/vite';
+import precompileIntl from '@stalkerg/svelte-icu/vite';
 
 export default defineConfig({
   plugins: [precompileIntl({ locales: 'locales', mode: 'eager' }), sveltekit()],
@@ -51,7 +51,7 @@ Create `locales/en.json`, `locales/ja.json`, and so on:
 ```svelte
 <!-- src/routes/+layout.svelte -->
 <script lang="ts">
-  import { provideI18n } from '@stalkerg/svelte-i18n';
+  import { provideI18n } from '@stalkerg/svelte-icu';
   import { catalogs } from '$locales';
 
   let { data, children } = $props();
@@ -73,7 +73,7 @@ Use the instance from context once per component:
 
 ```svelte
 <script lang="ts">
-  import { useI18n } from '@stalkerg/svelte-i18n';
+  import { useI18n } from '@stalkerg/svelte-icu';
   const i18n = useI18n();
 </script>
 
@@ -83,7 +83,7 @@ Use the instance from context once per component:
 
 ## Documentation
 
-- [Svelte 5 refactoring plan](https://github.com/stalkerg/svelte-i18n/blob/main/docs/svelte5-refactoring-plan.md)
-- [Migration from `svelte-intl-precompile`](https://github.com/stalkerg/svelte-i18n/blob/main/docs/migration-from-svelte-intl-precompile.md)
+- [Svelte 5 refactoring plan](https://github.com/stalkerg/svelte-icu/blob/main/docs/svelte5-refactoring-plan.md)
+- [Migration from `svelte-intl-precompile`](https://github.com/stalkerg/svelte-icu/blob/main/docs/migration-from-svelte-intl-precompile.md)
 
 The original project histories and licenses are preserved in the monorepo.

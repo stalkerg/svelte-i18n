@@ -4,7 +4,7 @@
   "description": "Runtime helpers to be used in translations precompiled by babel-plugin-precompile-intl",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stalkerg/svelte-i18n.git",
+    "url": "git+https://github.com/stalkerg/svelte-icu.git",
     "directory": "packages/precompile-intl-runtime"
   },
   "author": {

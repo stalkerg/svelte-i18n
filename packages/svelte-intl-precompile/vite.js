@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import { transformSync } from '@babel/core';
 import buildICUPlugin from '@stalkerg/babel-plugin-precompile-intl';
 
-const PACKAGE_NAME = '@stalkerg/svelte-i18n';
+const PACKAGE_NAME = '@stalkerg/svelte-icu';
 const intlPrecompiler = buildICUPlugin(PACKAGE_NAME);
 
 export function transformCode(code, options = {}) {
@@ -11,7 +11,7 @@ export function transformCode(code, options = {}) {
     ...options,
     plugins: [...(options.plugins ?? []), intlPrecompiler],
   });
-  if (!result?.code) throw new Error('[svelte-i18n] Babel produced no locale output.');
+  if (!result?.code) throw new Error('[svelte-icu] Babel produced no locale output.');
   return result.code;
 }
 
@@ -44,7 +44,7 @@ function normalizeOptions(localesOrOptions, prefixOrOptions) {
     return { ...legacyOptions, locales: localesOrOptions };
   }
   if (!localesOrOptions?.locales) {
-    throw new Error('[svelte-i18n] The Vite plugin requires a "locales" directory.');
+    throw new Error('[svelte-icu] The Vite plugin requires a "locales" directory.');
   }
   return localesOrOptions;
 }
@@ -70,7 +70,7 @@ export default function svelteI18n(localesOrOptions, prefixOrOptions) {
     exclude,
   } = options;
   if (mode !== 'eager' && mode !== 'lazy') {
-    throw new Error('[svelte-i18n] "mode" must be either "eager" or "lazy".');
+    throw new Error('[svelte-icu] "mode" must be either "eager" or "lazy".');
   }
 
   const resolvedRoot = path.resolve(localesRoot);
@@ -141,7 +141,7 @@ export default function svelteI18n(localesOrOptions, prefixOrOptions) {
 
   async function findLocale(locale) {
     if (!/^[\p{L}\p{N}_-]+$/u.test(locale)) {
-      throw new Error(`[svelte-i18n] Invalid locale name: ${JSON.stringify(locale)}.`);
+      throw new Error(`[svelte-icu] Invalid locale name: ${JSON.stringify(locale)}.`);
     }
     const filebase = path.resolve(resolvedRoot, locale);
     const { default: stripBom } = await import('strip-bom');
@@ -160,11 +160,11 @@ export default function svelteI18n(localesOrOptions, prefixOrOptions) {
         if (error?.code !== 'ENOENT') throw error;
       }
     }
-    throw new Error(`[svelte-i18n] No locale file found for ${JSON.stringify(locale)}.`);
+    throw new Error(`[svelte-icu] No locale file found for ${JSON.stringify(locale)}.`);
   }
 
   return {
-    name: 'svelte-i18n',
+    name: 'svelte-icu',
     enforce: 'pre',
 
     configureServer(server) {

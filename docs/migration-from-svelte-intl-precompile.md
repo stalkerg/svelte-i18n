@@ -31,7 +31,7 @@ The new primary API targets Svelte 5 and runes mode. Svelte 3 and Svelte 4 are
 not supported by the primary entry point.
 
 ```sh
-npm install @stalkerg/svelte-i18n
+npm install @stalkerg/svelte-icu
 ```
 
 ## 2. Vite configuration
@@ -42,7 +42,7 @@ The Vite plugin remains a build plugin, but configuration belongs in
 ```ts
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import precompileIntl from '@stalkerg/svelte-i18n/vite';
+import precompileIntl from '@stalkerg/svelte-icu/vite';
 
 export default defineConfig({
   plugins: [precompileIntl({ locales: 'locales', mode: 'eager' }), sveltekit()],
@@ -75,7 +75,7 @@ export default defineConfig({
 
 ```svelte
 <script lang="ts">
-  import { provideI18n } from '@stalkerg/svelte-i18n';
+  import { provideI18n } from '@stalkerg/svelte-icu';
   import { catalogs } from '$locales';
 
   let { data, children } = $props();
@@ -116,7 +116,7 @@ client-side navigation.
 
 ```svelte
 <script lang="ts">
-  import { useI18n } from '@stalkerg/svelte-i18n';
+  import { useI18n } from '@stalkerg/svelte-icu';
 
   const i18n = useI18n();
 </script>
@@ -158,7 +158,7 @@ the root layout.
 
 ```ts
 // +layout.server.ts
-import { getLocaleFromAcceptLanguageHeader } from '@stalkerg/svelte-i18n';
+import { getLocaleFromAcceptLanguageHeader } from '@stalkerg/svelte-icu';
 
 export const load = ({ request }) => ({
   locale:
@@ -169,7 +169,7 @@ export const load = ({ request }) => ({
 ```svelte
 <!-- +layout.svelte -->
 <script lang="ts">
-  import { provideI18n } from '@stalkerg/svelte-i18n';
+  import { provideI18n } from '@stalkerg/svelte-icu';
   import { catalogs } from '$locales';
 
   let { data, children } = $props();
@@ -204,7 +204,7 @@ The virtual module then exposes `loaders` instead of populated `catalogs`:
 
 ```svelte
 <script lang="ts">
-  import { provideI18n } from '@stalkerg/svelte-i18n';
+  import { provideI18n } from '@stalkerg/svelte-icu';
   import en from '$locales/en';
   import { loaders } from '$locales';
 
@@ -261,7 +261,7 @@ them in a small test-only provider component:
 ```svelte
 <!-- TestProvider.svelte -->
 <script lang="ts">
-  import { provideI18n } from '@stalkerg/svelte-i18n';
+  import { provideI18n } from '@stalkerg/svelte-icu';
   import Child from './ComponentUnderTest.svelte';
 
   let { messages } = $props();

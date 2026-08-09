@@ -7,7 +7,7 @@ import svelteI18n from '../vite.js';
 let localesRoot: string;
 
 beforeAll(async () => {
-  localesRoot = await mkdtemp(join(tmpdir(), 'svelte-i18n-'));
+  localesRoot = await mkdtemp(join(tmpdir(), 'svelte-icu-'));
   await Promise.all([
     writeFile(
       join(localesRoot, 'en.json'),
@@ -60,7 +60,7 @@ describe('virtual locale modules', () => {
     const plugin = svelteI18n({ locales: localesRoot });
     const code = await resolveAndLoad(plugin, '$locales/en');
 
-    expect(code).toContain('import { __interpolate } from "@stalkerg/svelte-i18n";');
+    expect(code).toContain('import { __interpolate } from "@stalkerg/svelte-icu";');
     expect(code).toContain(
       '"interpolated": (__ctx, __values) => `Hello ${__interpolate(__values["value"])}`',
     );
