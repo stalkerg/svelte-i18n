@@ -15,7 +15,17 @@ one project.
 
 Each upstream default branch was imported as an unsquashed Git subtree, so its
 commit history remains available in this repository. The original package
-licenses remain in their respective workspace directories.
+licensing metadata and license files remain in their respective workspaces.
+
+## Updating from upstream
+
+The local checkout keeps one remote per original repository:
+
+```sh
+git subtree pull --prefix=packages/svelte-intl-precompile upstream-integration main
+git subtree pull --prefix=packages/babel-plugin-precompile-intl upstream-compiler master
+git subtree pull --prefix=packages/precompile-intl-runtime upstream-runtime master
+```
 
 ## Goals
 
