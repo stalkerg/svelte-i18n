@@ -24,3 +24,8 @@ licensing metadata and license files remain in their respective workspaces.
 - Replace the global runtime design where necessary for safe SvelteKit SSR.
 - Upgrade the build, test, and dependency toolchain.
 - Keep compiler, runtime, and framework integration changes atomic.
+
+## Project documents
+
+- [Svelte 5 refactoring plan](docs/svelte5-refactoring-plan.md)
+- [Migration guide from `svelte-intl-precompile`](docs/migration-from-svelte-intl-precompile.md)
