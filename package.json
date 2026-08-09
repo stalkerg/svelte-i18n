@@ -1,0 +1,7 @@
+{
+  "name": "svelte-i18n-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}
