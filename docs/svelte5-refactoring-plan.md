@@ -1,6 +1,6 @@
 # Svelte 5 refactoring plan
 
-Status: active (M2–M4 implemented; integration and release hardening continue)
+Status: active (M2–M5 implemented; release hardening continues)
 Target: first major release of the autonomous monorepo fork
 
 ## Why this is an architectural migration
@@ -145,10 +145,10 @@ mutable i18n state.
 
 - [x] Generate typed `availableLocales`, eager catalogs, and lazy loaders.
 - [x] Support request-scoped eager catalogs for SSR.
-- [ ] Define and test the lazy SSR/hydration strategy separately.
-- [ ] Add parallel SSR tests with different locales and artificial delays.
-      (Parallel component-tree isolation is covered; async SSR delays remain.)
+- [x] Define and test the lazy SSR/hydration strategy separately.
+- [x] Add parallel SSR tests with different locales and artificial delays.
 - [ ] Add a current SvelteKit example and Storybook production-build fixture.
+      (The production SvelteKit fixture is complete; Storybook remains.)
 
 Exit criteria: concurrent SSR responses never contain another request's
 locale, and hydration output matches server output.

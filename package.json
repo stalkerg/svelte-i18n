@@ -10,9 +10,14 @@
     "node": ">=22.12"
   },
   "packageManager": "npm@11.16.0",
+  "overrides": {
+    "cookie": "0.7.2"
+  },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "npm run build && vitest run",
+    "test:e2e:build": "npm run build && node scripts/build-e2e-fixture.mjs && svelte-check --workspace packages/svelte-intl-precompile/tests/fixtures/sveltekit-lazy --tsconfig ./tsconfig.json",
+    "test:e2e": "npm run test:e2e:build && playwright test",
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -20,12 +25,16 @@
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",
+    "@playwright/test": "^1.62.1",
+    "@sveltejs/adapter-node": "^5.5.7",
+    "@sveltejs/kit": "^2.70.2",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@types/convert-source-map": "^2.0.3",
     "@types/node": "^26.0.0",
     "prettier": "^3.9.6",
     "svelte": "^5.56.8",
-    "typescript": "^7.0.2",
+    "svelte-check": "^4.7.5",
+    "typescript": "^6.0.3",
     "vite": "^8.2.1",
     "vitest": "^4.1.10"
   }

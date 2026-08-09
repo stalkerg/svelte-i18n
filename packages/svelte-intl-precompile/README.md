@@ -81,6 +81,16 @@ Use the instance from context once per component:
 <button onclick={() => i18n.setLocale('ja')}>日本語</button>
 ```
 
+## Lazy SSR
+
+With `mode: 'lazy'`, load the requested catalog in universal `+layout.ts` and
+pass it to the root layout. Universal load runs once for SSR and again before
+hydration, so compiled message functions never cross the serialized server-data
+boundary. Call `i18n.setMessages(locale, catalog)` when layout data changes,
+then `i18n.setLocale(locale)`.
+
+See the migration guide for the complete eager and lazy SvelteKit examples.
+
 ## Documentation
 
 - [Svelte 5 refactoring plan](https://github.com/stalkerg/svelte-icu/blob/main/docs/svelte5-refactoring-plan.md)

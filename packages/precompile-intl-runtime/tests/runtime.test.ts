@@ -102,6 +102,21 @@ describe('request-scoped I18n instances', () => {
     expect(second.isLoading).toBe(false);
   });
 
+  it('installs a preloaded catalog without invoking its lazy loader again', async () => {
+    const loader = vi.fn(async () => ({ greeting: 'Loader result' }));
+    const i18n = createI18n({
+      locale: 'en',
+      messages: { en: { greeting: 'Hello' } },
+      loaders: { ja: loader },
+    });
+
+    i18n.setMessages('ja', { greeting: 'Preloaded result' });
+    await i18n.setLocale('ja');
+
+    expect(loader).not.toHaveBeenCalled();
+    expect(i18n.t('greeting')).toBe('Preloaded result');
+  });
+
   it('does not let a stale loader completion change the selected locale', async () => {
     let resolveJapanese!: (catalog: Catalog) => void;
     const japanese = new Promise<Catalog>((resolve) => {

@@ -23,6 +23,7 @@ import type {
 
 export class I18n {
   #locale = $state('');
+  #loadedCatalogs = $state.raw<Catalogs>({});
   #overlays = $state.raw<Catalogs>({});
   #loading = $state(false);
   #error = $state<unknown>(undefined);
@@ -73,6 +74,7 @@ export class I18n {
     return [
       ...new Set([
         ...Object.keys(this.#baseCatalogs),
+        ...Object.keys(this.#loadedCatalogs),
         ...Object.keys(this.#overlays),
         ...Object.keys(this.#loaders),
       ]),
@@ -81,17 +83,32 @@ export class I18n {
 
   /** Returns shared base catalogs unless this instance has local additions. */
   get catalogs(): Catalogs {
-    if (Object.keys(this.#overlays).length === 0) return this.#baseCatalogs;
+    if (
+      Object.keys(this.#loadedCatalogs).length === 0 &&
+      Object.keys(this.#overlays).length === 0
+    ) {
+      return this.#baseCatalogs;
+    }
+
     const catalogs: Record<string, Catalog> = { ...this.#baseCatalogs };
-    for (const [locale, overlay] of Object.entries(this.#overlays)) {
-      catalogs[locale] = mergeCatalogs(this.#baseCatalogs[locale], overlay);
+    for (const source of [this.#loadedCatalogs, this.#overlays]) {
+      for (const [locale, catalog] of Object.entries(source)) {
+        catalogs[locale] = mergeCatalogs(catalogs[locale], catalog);
+      }
     }
     return Object.freeze(catalogs);
   }
 
   t(id: string, values: MessageValues = {}, options: TranslateOptions = {}): string {
     const locale = options.locale ?? this.#locale;
-    const message = lookup(id, locale, this.#fallbackLocale, this.#overlays, this.#baseCatalogs);
+    const message = lookup(
+      id,
+      locale,
+      this.#fallbackLocale,
+      this.#overlays,
+      this.#loadedCatalogs,
+      this.#baseCatalogs,
+    );
 
     if (typeof message === 'string') return message;
     if (typeof message === 'function') return message(this.#contextFor(locale), values);
@@ -123,6 +140,17 @@ export class I18n {
     let next = this.#overlays[locale] ?? {};
     for (const partial of partials) next = mergeCatalogs(next, partial);
     this.#overlays = Object.freeze({ ...this.#overlays, [locale]: next });
+  }
+
+  /** Install a complete catalog that was resolved before render or hydration. */
+  setMessages(locale: string, ...catalogs: readonly Catalog[]): void {
+    const [first, ...rest] = catalogs;
+    if (!first) return;
+    const current = this.#loadedCatalogs[locale];
+    let next = current ? mergeCatalogs(current, first) : first;
+    for (const catalog of rest) next = mergeCatalogs(next, catalog);
+    this.#loadedCatalogs = Object.freeze({ ...this.#loadedCatalogs, [locale]: next });
+    this.#loadedLocales.add(locale);
   }
 
   async loadLocale(locale = this.#locale): Promise<void> {
@@ -170,8 +198,7 @@ export class I18n {
           if (!configured) return;
           const loaders = Array.isArray(configured) ? configured : [configured];
           const catalogs = await Promise.all(loaders.map(loadCatalog));
-          this.addMessages(locale, ...catalogs);
-          this.#loadedLocales.add(locale);
+          this.setMessages(locale, ...catalogs);
         }),
       );
     } catch (error) {

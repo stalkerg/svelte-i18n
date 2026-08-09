@@ -1,0 +1,5 @@
+{
+  "name": "svelte-icu-lazy-ssr-fixture",
+  "private": true,
+  "type": "module"
+}

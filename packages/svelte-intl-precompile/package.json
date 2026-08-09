@@ -25,6 +25,7 @@
   "files": [
     "index.js",
     "index.d.ts",
+    "locales.d.ts",
     "vite.js",
     "vite.d.ts",
     "sveltekit-plugin.js",

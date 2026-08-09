@@ -188,11 +188,10 @@ export const load = ({ request }) => ({
 {@render children()}
 ```
 
-The first major release will document eager SSR as the guaranteed path. Lazy
-SSR will only be documented as stable after its hydration behavior is covered
-by integration tests.
+Eager mode is the simplest SSR path. The library also supports request-scoped
+lazy SSR using a universal SvelteKit load function.
 
-### Lazy client-side loading
+### Lazy SSR and hydration
 
 Select lazy output in Vite:
 
@@ -200,23 +199,50 @@ Select lazy output in Vite:
 precompileIntl({ locales: 'locales', mode: 'lazy' });
 ```
 
-The virtual module then exposes `loaders` instead of populated `catalogs`:
+The virtual module then exposes `loaders` instead of populated `catalogs`.
+Keep locale negotiation in `+layout.server.ts`, because the locale string is
+serializable. Load the compiled catalog in universal `+layout.ts`:
+
+```ts
+// +layout.ts
+import { error } from '@sveltejs/kit';
+import { loaders } from '$locales';
+import type { LayoutLoad } from './$types';
+
+export const load: LayoutLoad = async ({ data }) => {
+  const loader = loaders[data.locale];
+  if (!loader) error(404, `Unknown locale: ${data.locale}`);
+
+  return {
+    locale: data.locale,
+    catalog: await loader(),
+  };
+};
+```
+
+A universal load function runs during SSR and again during hydration. It may
+return compiled functions, unlike `+layout.server.ts`, whose output must be
+serializable. This lets the server and browser import the same locale chunk
+before rendering their respective component trees.
+
+Install the resolved catalog in the root layout:
 
 ```svelte
+<!-- +layout.svelte -->
 <script lang="ts">
   import { provideI18n } from '@stalkerg/svelte-icu';
-  import en from '$locales/en';
   import { loaders } from '$locales';
 
   let { data, children } = $props();
   const i18n = provideI18n(() => ({
-    locale: 'en',
+    locale: data.locale,
     fallbackLocale: 'en',
-    messages: { en },
+    messages: { [data.locale]: data.catalog },
     loaders
   }));
 
   $effect(() => {
+    i18n.setMessages(data.locale, data.catalog);
     void i18n.setLocale(data.locale);
   });
 </script>
@@ -224,9 +250,13 @@ The virtual module then exposes `loaders` instead of populated `catalogs`:
 {@render children()}
 ```
 
-Keep the fallback locale eager. Until lazy SSR hydration tests are complete,
-use eager mode when the first server response must be rendered in the requested
-locale.
+`setMessages` marks the catalog returned by the universal load as complete, so
+`setLocale` does not invoke its lazy loader a second time. The effect also
+installs new catalogs during client-side navigation.
+
+Do not return a compiled catalog from `+layout.server.ts`: message functions
+cannot be serialized. The production fixture tests initial hydration, lazy
+client navigation, and concurrent delayed SSR requests in different locales.
 
 ## 7. Custom formats
 
@@ -299,5 +329,7 @@ For pure translation tests, create an isolated instance directly with
 - [ ] Replace `$locale = value` with `i18n.setLocale(value)`.
 - [ ] Move custom formats and runtime messages to the instance.
 - [ ] Ensure SvelteKit `load` returns data and does not mutate i18n state.
+- [ ] In lazy mode, load compiled catalogs in universal `+layout.ts`, not
+      `+layout.server.ts`.
 - [ ] Add a provider to component tests.
 - [ ] Test SSR output and hydration for every supported locale.
