@@ -15,11 +15,16 @@ import type {
   Formats,
   I18nOptions,
   LocaleLoaders,
+  Message,
   MessageContext,
   MessageValues,
   NumberFormatOptions,
   TranslateOptions,
 } from './types/index.js';
+
+const MISSING_MESSAGE = Symbol('missing message');
+const EMPTY_VALUES: MessageValues = Object.freeze({});
+type CachedMessage = Message | typeof MISSING_MESSAGE;
 
 export class I18n {
   #locale = $state('');
@@ -38,6 +43,9 @@ export class I18n {
   readonly #loadedLocales: Set<string>;
   readonly #activeLocaleLoads = new Map<string, Promise<void>>();
 
+  #messageCaches: Record<string, Record<string, CachedMessage>> = Object.create(null);
+  #currentMessageCache: Record<string, CachedMessage> = Object.create(null);
+  #currentContext: MessageContext | undefined;
   #localeGeneration = 0;
   #activeLoadCount = 0;
   #loadingTimer: ReturnType<typeof setTimeout> | undefined;
@@ -52,6 +60,7 @@ export class I18n {
     this.#loadingDelay = options.loadingDelay ?? 200;
     this.#warnOnMissingMessages = options.warnOnMissingMessages ?? true;
     this.#loadedLocales = new Set(Object.keys(this.#baseCatalogs));
+    this.#messageCaches[this.#locale] = this.#currentMessageCache;
   }
 
   get locale(): string {
@@ -99,16 +108,30 @@ export class I18n {
     return Object.freeze(catalogs);
   }
 
-  t(id: string, values: MessageValues = {}, options: TranslateOptions = {}): string {
-    const locale = options.locale ?? this.#locale;
-    const message = lookup(
-      id,
-      locale,
-      this.#fallbackLocale,
-      this.#overlays,
-      this.#loadedCatalogs,
-      this.#baseCatalogs,
-    );
+  t(id: string, values: MessageValues = EMPTY_VALUES, options?: TranslateOptions): string {
+    const requestedLocale = options?.locale;
+    const locale = requestedLocale ?? this.#locale;
+    let localeCache =
+      requestedLocale === undefined || requestedLocale === this.#locale
+        ? this.#currentMessageCache
+        : this.#messageCaches[locale];
+    let cached = localeCache?.[id];
+    if (cached === undefined) {
+      const message = lookup(
+        id,
+        locale,
+        this.#fallbackLocale,
+        this.#overlays,
+        this.#loadedCatalogs,
+        this.#baseCatalogs,
+      );
+      if (!localeCache) {
+        localeCache = Object.create(null) as Record<string, CachedMessage>;
+        this.#messageCaches[locale] = localeCache;
+      }
+      cached = localeCache[id] = message ?? MISSING_MESSAGE;
+    }
+    const message = cached === MISSING_MESSAGE ? undefined : cached;
 
     if (typeof message === 'string') return message;
     if (typeof message === 'function') return message(this.#contextFor(locale), values);
@@ -121,7 +144,7 @@ export class I18n {
         ).join('", "')}".`,
       );
     }
-    return options.default ?? id;
+    return options?.default ?? id;
   }
 
   formatNumber(value: number, options: NumberFormatOptions | string = {}): string {
@@ -140,6 +163,7 @@ export class I18n {
     let next = this.#overlays[locale] ?? {};
     for (const partial of partials) next = mergeCatalogs(next, partial);
     this.#overlays = Object.freeze({ ...this.#overlays, [locale]: next });
+    this.#clearMessageCache();
   }
 
   /** Install a complete catalog that was resolved before render or hydration. */
@@ -151,6 +175,7 @@ export class I18n {
     for (const catalog of rest) next = mergeCatalogs(next, catalog);
     this.#loadedCatalogs = Object.freeze({ ...this.#loadedCatalogs, [locale]: next });
     this.#loadedLocales.add(locale);
+    this.#clearMessageCache();
   }
 
   async loadLocale(locale = this.#locale): Promise<void> {
@@ -176,16 +201,30 @@ export class I18n {
     if (!locale) throw new Error('[precompile-intl-runtime] "locale" cannot be empty.');
     const generation = ++this.#localeGeneration;
     await this.loadLocale(locale);
-    if (generation === this.#localeGeneration) this.#locale = locale;
+    if (generation === this.#localeGeneration) {
+      this.#locale = locale;
+      this.#currentMessageCache =
+        this.#messageCaches[locale] ?? (Object.create(null) as Record<string, CachedMessage>);
+      this.#messageCaches[locale] = this.#currentMessageCache;
+      this.#currentContext = this.#contexts.get(locale);
+    }
   }
 
   #contextFor(locale: string): MessageContext {
+    if (locale === this.#locale && this.#currentContext) return this.#currentContext;
     let context = this.#contexts.get(locale);
     if (!context) {
       context = createMessageContext(locale, this.#formats);
       this.#contexts.set(locale, context);
     }
+    if (locale === this.#locale) this.#currentContext = context;
     return context;
+  }
+
+  #clearMessageCache(): void {
+    this.#messageCaches = Object.create(null);
+    this.#currentMessageCache = Object.create(null) as Record<string, CachedMessage>;
+    this.#messageCaches[this.#locale] = this.#currentMessageCache;
   }
 
   async #loadLocales(locales: string[]): Promise<void> {

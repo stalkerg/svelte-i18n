@@ -49,6 +49,26 @@ describe('compiled message helpers', () => {
     expect(__date(englishContext, new Date(2013, 9, 18), 'medium')).toBe('Oct 18, 2013');
     expect(__select('unknown', { known: 'Known', other: 'Other' })).toBe('Other');
   });
+
+  it('does not share named formatters between different format configurations', () => {
+    const usdContext: MessageContext = {
+      locale: 'en-US',
+      formats: {
+        ...defaultFormats,
+        number: { ...defaultFormats.number, money: { style: 'currency', currency: 'USD' } },
+      },
+    };
+    const eurContext: MessageContext = {
+      locale: 'en-US',
+      formats: {
+        ...defaultFormats,
+        number: { ...defaultFormats.number, money: { style: 'currency', currency: 'EUR' } },
+      },
+    };
+
+    expect(__number(usdContext, 10, 'money')).toContain('$');
+    expect(__number(eurContext, 10, 'money')).toContain('€');
+  });
 });
 
 describe('request-scoped I18n instances', () => {
@@ -115,6 +135,24 @@ describe('request-scoped I18n instances', () => {
 
     expect(loader).not.toHaveBeenCalled();
     expect(i18n.t('greeting')).toBe('Preloaded result');
+  });
+
+  it('invalidates cached hits and misses when catalogs change', () => {
+    const i18n = createI18n({
+      locale: 'en',
+      messages: { en: { existing: 'Base value' } },
+      warnOnMissingMessages: false,
+    });
+
+    expect(i18n.t('existing')).toBe('Base value');
+    expect(i18n.t('late')).toBe('late');
+
+    i18n.addMessages('en', { existing: 'Overlay value', late: 'Added later' });
+    expect(i18n.t('existing')).toBe('Overlay value');
+    expect(i18n.t('late')).toBe('Added later');
+
+    i18n.setMessages('ja', { existing: 'Loaded value' });
+    expect(i18n.t('existing', {}, { locale: 'ja' })).toBe('Loaded value');
   });
 
   it('does not let a stale loader completion change the selected locale', async () => {

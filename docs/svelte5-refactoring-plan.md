@@ -1,6 +1,6 @@
 # Svelte 5 refactoring plan
 
-Status: active (M2–M5 implemented; release hardening continues)
+Status: active (M2–M5 implemented; M6 release hardening continues)
 Target: first major release of the autonomous monorepo fork
 
 ## Why this is an architectural migration
@@ -95,6 +95,12 @@ Performance budgets:
 - no duplicate locale import for concurrent requests;
 - no retained request instance after its component tree is released.
 
+The reproducible measurements and current results are recorded in
+[Performance benchmarks](benchmarks.md). The representative runtime mix is 20%
+faster than the historical build, warm SSR is 34% faster, concurrent locale
+imports remain deduplicated, and the memory harness found no measurable
+request-instance retention after release.
+
 ## Milestones
 
 ### M1 — Monorepo baseline
@@ -103,7 +109,7 @@ Performance budgets:
 - [x] Remove committed tarballs, build output, backups, and nested lockfiles.
 - [x] Add shared TypeScript, Vitest, formatting, and CI configuration.
 - [x] Port all existing tests to the shared test runner.
-- [ ] Capture bundle-size and formatting benchmarks before changing behavior.
+- [x] Capture the historical bundle-size and formatting baseline.
 
 Exit criteria: one install, build, check, and test command succeeds from root.
 
@@ -125,7 +131,7 @@ Exit criteria: formatting and lookup tests run without `svelte/store`.
 - [x] Pass locale and formats explicitly to all generated helpers.
 - [x] Update compiler snapshots and integration plugin tests.
 - [x] Add correct ordinal plural handling.
-- [ ] Benchmark the new generated output after minification and compression.
+- [x] Benchmark the new generated output after minification and compression.
 
 Exit criteria: compiler output contains no dependency on global locale state.
 
@@ -158,8 +164,9 @@ locale, and hydration output matches server output.
 - [ ] Decide whether a tree-shakeable `/legacy` store adapter is worth keeping.
 - [ ] Generate locale and message-key types.
 - [x] Validate packed artifacts in a clean Vite/Svelte 5 consumer project.
-- [ ] Run bundle and SSR benchmarks against the baseline.
-- [ ] Finish the migration guide and release checklist.
+- [x] Run bundle and SSR benchmarks against the baseline.
+- [x] Finish the migration guide.
+- [ ] Complete the release checklist.
 - [ ] Publish the first major version with Svelte `^5` as a peer dependency.
 
 ## Pull request sequence

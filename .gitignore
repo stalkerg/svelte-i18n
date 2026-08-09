@@ -6,5 +6,7 @@ build/
 .vite/
 playwright-report/
 test-results/
+.benchmark-cache/
+.benchmark-results/
 *.log
 .DS_Store
