@@ -29,6 +29,26 @@ const MISSING_MESSAGE = Symbol('missing message');
 const EMPTY_VALUES: MessageValues = Object.freeze({});
 type CachedMessage = Message | typeof MISSING_MESSAGE;
 
+export interface Translate {
+  <Key extends MessageKey>(id: Key, ...args: TranslateArguments<Key>): string;
+}
+
+export interface I18n extends Translate {
+  readonly locale: Locale;
+  readonly fallbackLocale: Locale | '';
+  readonly isLoading: boolean;
+  readonly error: unknown;
+  readonly locales: Locale[];
+  readonly catalogs: Catalogs;
+  formatNumber(value: number, options?: NumberFormatOptions | string): string;
+  formatDate(value: Date | number, options?: DateTimeFormatOptions | string): string;
+  formatTime(value: Date | number, options?: DateTimeFormatOptions | string): string;
+  addMessages(locale: Locale, ...partials: readonly Catalog[]): void;
+  setMessages(locale: Locale, ...catalogs: readonly Catalog[]): void;
+  loadLocale(locale?: Locale): Promise<void>;
+  setLocale(locale: Locale): Promise<void>;
+}
+
 class I18nState {
   #locale = $state('');
   #loadedCatalogs = $state.raw<Catalogs>({});
@@ -114,12 +134,19 @@ class I18nState {
   t<Key extends MessageKey>(id: Key, ...args: TranslateArguments<Key>): string;
   t(id: string, values: MessageValues = EMPTY_VALUES, options?: TranslateOptions): string {
     const requestedLocale = options?.locale;
-    const locale = requestedLocale ?? this.#locale;
-    let localeCache =
-      requestedLocale === undefined || requestedLocale === this.#locale
-        ? this.#currentMessageCache
-        : this.#messageCaches[locale];
-    let cached = localeCache?.[id];
+    let locale = this.#locale;
+    let localeCache = this.#currentMessageCache;
+    if (requestedLocale !== undefined && requestedLocale !== locale) {
+      locale = requestedLocale;
+      let requestedCache = this.#messageCaches[locale];
+      if (!requestedCache) {
+        requestedCache = Object.create(null) as Record<string, CachedMessage>;
+        this.#messageCaches[locale] = requestedCache;
+      }
+      localeCache = requestedCache;
+    }
+
+    let cached = localeCache[id];
     if (cached === undefined) {
       const message = lookup(
         id,
@@ -129,10 +156,6 @@ class I18nState {
         this.#loadedCatalogs,
         this.#baseCatalogs,
       );
-      if (!localeCache) {
-        localeCache = Object.create(null) as Record<string, CachedMessage>;
-        this.#messageCaches[locale] = localeCache;
-      }
       cached = localeCache[id] = message ?? MISSING_MESSAGE;
     }
     const message = cached === MISSING_MESSAGE ? undefined : cached;
@@ -273,133 +296,48 @@ class I18nState {
   }
 }
 
-export interface Translate {
-  <Key extends MessageKey>(id: Key, ...args: TranslateArguments<Key>): string;
-}
+const I18N_STATE = Symbol();
+type I18nWithState = I18n & { [I18N_STATE]: I18nState };
 
-export interface I18n extends Translate {
-  /** Backwards-compatible alias. The callable instance and `t` are identical. */
-  readonly t: Translate;
-  readonly locale: Locale;
-  readonly fallbackLocale: Locale | '';
-  readonly isLoading: boolean;
-  readonly error: unknown;
-  readonly locales: Locale[];
-  readonly catalogs: Catalogs;
-  formatNumber(value: number, options?: NumberFormatOptions | string): string;
-  formatDate(value: Date | number, options?: DateTimeFormatOptions | string): string;
-  formatTime(value: Date | number, options?: DateTimeFormatOptions | string): string;
-  addMessages(locale: Locale, ...partials: readonly Catalog[]): void;
-  setMessages(locale: Locale, ...catalogs: readonly Catalog[]): void;
-  loadLocale(locale?: Locale): Promise<void>;
-  setLocale(locale: Locale): Promise<void>;
-}
+// Keep control methods shared instead of allocating and binding them per request.
+const I18N_PROTOTYPE = Object.create(Function.prototype) as I18n;
 
-interface I18nConstructor {
-  new (options: I18nOptions): I18n;
-  readonly prototype: I18n;
-}
-
-const I18N_STATE = Symbol('precompile-intl-runtime.I18nState');
-type I18nWithState = I18n & { readonly [I18N_STATE]: I18nState };
-
-function stateOf(instance: I18n): I18nState {
-  const state = (instance as I18nWithState)[I18N_STATE];
-  if (!state) throw new TypeError('[precompile-intl-runtime] Invalid I18n receiver.');
-  return state;
-}
-
-function I18nFactory(options: I18nOptions): I18n {
-  const state = new I18nState(options);
-  // Keep explicit parameters on the hot path; a rest array costs more than the
-  // lookup for cached plain messages.
-  const instance = ((id: string, values?: MessageValues, translateOptions?: TranslateOptions) =>
-    state.t(id, values, translateOptions)) as I18nWithState;
-  Object.defineProperty(instance, I18N_STATE, { value: state });
-  Object.setPrototypeOf(instance, I18nFactory.prototype);
-  return instance;
-}
-
-I18nFactory.prototype = Object.create(Function.prototype, {
-  constructor: { value: I18nFactory, configurable: true, writable: true },
-  t: {
-    get(this: I18n) {
-      return this;
+for (const name of [
+  'locale',
+  'fallbackLocale',
+  'isLoading',
+  'error',
+  'locales',
+  'catalogs',
+] as const) {
+  Object.defineProperty(I18N_PROTOTYPE, name, {
+    get(this: I18nWithState) {
+      return this[I18N_STATE][name];
     },
-  },
-  locale: {
-    get(this: I18n) {
-      return stateOf(this).locale;
-    },
-  },
-  fallbackLocale: {
-    get(this: I18n) {
-      return stateOf(this).fallbackLocale;
-    },
-  },
-  isLoading: {
-    get(this: I18n) {
-      return stateOf(this).isLoading;
-    },
-  },
-  error: {
-    get(this: I18n) {
-      return stateOf(this).error;
-    },
-  },
-  locales: {
-    get(this: I18n) {
-      return stateOf(this).locales;
-    },
-  },
-  catalogs: {
-    get(this: I18n) {
-      return stateOf(this).catalogs;
-    },
-  },
-  formatNumber: {
-    value(this: I18n, value: number, options: NumberFormatOptions | string = {}) {
-      return stateOf(this).formatNumber(value, options);
-    },
-  },
-  formatDate: {
-    value(this: I18n, value: Date | number, options: DateTimeFormatOptions | string = {}) {
-      return stateOf(this).formatDate(value, options);
-    },
-  },
-  formatTime: {
-    value(this: I18n, value: Date | number, options: DateTimeFormatOptions | string = {}) {
-      return stateOf(this).formatTime(value, options);
-    },
-  },
-  addMessages: {
-    value(this: I18n, locale: Locale, ...partials: readonly Catalog[]) {
-      stateOf(this).addMessages(locale, ...partials);
-    },
-  },
-  setMessages: {
-    value(this: I18n, locale: Locale, ...catalogs: readonly Catalog[]) {
-      stateOf(this).setMessages(locale, ...catalogs);
-    },
-  },
-  loadLocale: {
-    value(this: I18n, locale?: Locale) {
-      return stateOf(this).loadLocale(locale);
-    },
-  },
-  setLocale: {
-    value(this: I18n, locale: Locale) {
-      return stateOf(this).setLocale(locale);
-    },
-  },
-});
-
-export const I18n = I18nFactory as unknown as I18nConstructor;
-
-export function isI18n(value: unknown): value is I18n {
-  return typeof value === 'function' && I18N_STATE in value;
+  });
 }
 
 export function createI18n(options: I18nOptions): I18n {
-  return new I18n(options);
+  const state = new I18nState(options);
+  const i18n = ((id: string, values?: MessageValues, translateOptions?: TranslateOptions) =>
+    state.t(id, values, translateOptions)) as I18nWithState;
+  i18n[I18N_STATE] = state;
+  Object.setPrototypeOf(i18n, I18N_PROTOTYPE);
+  return i18n;
+}
+
+for (const name of [
+  'formatNumber',
+  'formatDate',
+  'formatTime',
+  'addMessages',
+  'setMessages',
+  'loadLocale',
+  'setLocale',
+] as const) {
+  Object.defineProperty(I18N_PROTOTYPE, name, {
+    value(this: I18nWithState, ...args: never[]) {
+      return (this[I18N_STATE][name] as (...values: never[]) => unknown)(...args);
+    },
+  });
 }

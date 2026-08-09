@@ -8,9 +8,8 @@ import {
   createI18n,
   defaultFormats,
   getLocaleFromAcceptLanguageHeader,
-  I18n,
-  isI18n,
   type Catalog,
+  type I18n,
   type MessageContext,
 } from '../dist/modules/index.js';
 
@@ -85,20 +84,16 @@ describe('request-scoped I18n instances', () => {
     },
   } satisfies Record<string, Catalog>;
 
-  it('is directly callable and keeps t as an identical bound alias', () => {
+  it('is directly callable', () => {
     const i18n = createI18n({ locale: 'en', messages });
-    const t = i18n.t;
 
     expect(typeof i18n).toBe('function');
     expect(i18n('greeting', { name: 'Direct' })).toBe('Hello Direct');
-    expect(t('greeting', { name: 'Alias' })).toBe('Hello Alias');
-    expect(i18n.t).toBe(i18n);
-    expect(i18n).toBeInstanceOf(I18n);
-    expect(isI18n(i18n)).toBe(true);
+    expect('t' in i18n).toBe(false);
     expect(i18n.formatNumber(1_234)).toBe('1,234');
 
-    const constructed = new I18n({ locale: 'ja', messages });
-    expect(constructed('greeting', { name: 'Constructor' })).toBe('こんにちは Constructor');
+    const typed: I18n = i18n;
+    expect(typed('greeting', { name: 'Typed' })).toBe('Hello Typed');
   });
 
   it('does not share locale or overlays between instances', async () => {

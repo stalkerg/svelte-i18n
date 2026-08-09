@@ -1,6 +1,6 @@
 # Svelte 5 refactoring plan
 
-Status: `1.0.0-alpha.1` callable API; stable `1.0.0` awaits alpha feedback
+Status: `1.0.0-alpha.2` simplified callable API; stable `1.0.0` awaits alpha feedback
 Target: first major release of the autonomous monorepo fork
 
 ## Why this is an architectural migration

@@ -151,8 +151,8 @@ Use the instance from context once per component:
 <button onclick={() => i18n.setLocale('ja')}>日本語</button>
 ```
 
-`i18n.t(...)` remains an identical, bound alias for applications already using
-the first alpha, but direct invocation is the canonical API.
+The temporary `i18n.t(...)` alpha API was removed. Use the callable instance
+directly so there is only one translation API.
 
 ## Lazy SSR
 

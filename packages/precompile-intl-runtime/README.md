@@ -13,9 +13,10 @@ There is no mutable module-level locale, dictionary, or loading store. An
 `I18n` instance owns the mutable data for one component tree/request, while
 immutable loader results and `Intl` formatter caches may safely be shared.
 
-An instance translates directly with `i18n('key', values)`. The facade is not a
-`Proxy`; it delegates to its private rune state and exposes `i18n.t` as the same
-bound function for compatibility with the first alpha.
+An instance translates directly with `i18n('key', values)`. The small facade is
+not a `Proxy`; it delegates to private rune state. The temporary `i18n.t` alias
+from the first two alphas was removed instead of maintaining two spellings for
+the same operation.
 
 `syncDocumentLanguage(i18n)` is an optional, tree-shakeable Svelte effect that
 keeps the browser's `<html lang>` attribute synchronized with an instance. It

@@ -46,10 +46,10 @@ Each operation in the first table formats 1,000 messages. Higher is better.
 
 | Scenario               | Legacy samples/s | Svelte 5 samples/s | Change       |
 | ---------------------- | ---------------: | -----------------: | ------------ |
-| Cached plain message   |           97,954 |            145,521 | +49%         |
-| Interpolation          |           17,065 |             59,261 | 3.47x faster |
-| Cardinal plural        |            2,675 |              2,593 | -3.1%        |
-| Representative mix[^1] |            1,858 |              2,275 | +22%         |
+| Cached plain message   |           99,311 |            147,282 | +48%         |
+| Interpolation          |           17,355 |             62,132 | 3.58x faster |
+| Cardinal plural        |            2,733 |              2,587 | -5.3%        |
+| Representative mix[^1] |            1,895 |              2,284 | +21%         |
 
 [^1]:
     Equal parts plain messages, interpolation, cardinal plurals, numbers,
@@ -59,8 +59,8 @@ The isolated Intl tasks format 100 values per operation:
 
 | Scenario | Legacy samples/s | Svelte 5 samples/s | Change |
 | -------- | ---------------: | -----------------: | ------ |
-| Number   |           12,207 |             14,499 | +19%   |
-| Date     |            8,706 |             11,002 | +26%   |
+| Number   |           12,299 |             14,888 | +21%   |
+| Date     |            9,003 |             11,050 | +23%   |
 
 The first implementation repeatedly walked locale fallback chains and
 serialized named Intl options on every call. The measured hot paths now use:
@@ -74,11 +74,13 @@ serialized named Intl options on every call. The measured hot paths now use:
   caches;
 - separate cardinal and ordinal plural-rule caches.
 
-The callable facade was also benchmarked interleaved with the exact
-`v1.0.0-alpha.0` source. Direct cached lookup was 3.3% slower, the
-representative translation mix was 1.3% faster, and full SSR was 1.2% slower.
-Creating an instance added about 0.39 microseconds. These absolute costs keep
-the ergonomic API inside the original runtime and SSR performance budgets.
+The simplified callable facade was also benchmarked with the exact
+`v1.0.0-alpha.0` source in both execution orders. Reversing the order matters
+more than the implementation: cached lookup ranged from 0.2% slower to 4.1%
+faster, and the representative mix was 0.4-0.6% faster. This is benchmark
+noise, not a measurable translation regression. Full SSR ranged from 0.9% to
+2.6% slower with a 4-6% error margin. Creating an instance adds about 0.18
+microseconds; one instance is normally created per component tree/request.
 
 These caches contain only immutable catalogs, messages, contexts, and Intl
 objects. They do not keep an `I18n` request instance in process-wide state.
@@ -92,8 +94,8 @@ better.
 
 | Scenario                  | Legacy renders/s | Svelte 5 renders/s | Change |
 | ------------------------- | ---------------: | -----------------: | ------ |
-| One warm SSR render       |           24,931 |             31,547 | +27%   |
-| Batches of 20 SSR renders |            1,353 |              1,502 | +11%   |
+| One warm SSR render       |           26,751 |             34,522 | +29%   |
+| Batches of 20 SSR renders |            1,472 |              1,799 | +22%   |
 
 This benchmark is sequential so that both versions produce comparable work.
 It does not make the legacy global store safe for concurrent requests. Locale
@@ -129,8 +131,8 @@ library code rather than charging either implementation for the framework.
 
 | Artifact                          | Legacy | Svelte 5 | Delta               |
 | --------------------------------- | -----: | -------: | ------------------- |
-| Runtime, minified                 |  7,214 |   12,153 | +4,939 bytes        |
-| Runtime, minified + gzip          |  2,375 |    3,600 | +1,225 bytes (+52%) |
+| Runtime, minified                 |  7,214 |   11,272 | +4,058 bytes        |
+| Runtime, minified + gzip          |  2,375 |    3,435 | +1,060 bytes (+45%) |
 | 13 generated catalogs, raw        |  7,162 |    8,591 | +1,429 bytes        |
 | 13 generated catalogs, minified   |  5,097 |    5,777 | +680 bytes          |
 | 13 generated catalogs, min + gzip |  1,481 |    1,605 | +124 bytes (+8%)    |
@@ -141,9 +143,10 @@ loaders. The generated-catalog increase comes from passing explicit context
 and named values instead of reading global state and relying on sorted
 positional arguments.
 
-Relative to alpha.0, the callable facade adds 1,382 minified bytes or 335 gzip
-bytes. `i18n.t` is an alias of the callable function rather than a second
-translation implementation.
+Relative to alpha.0, direct `i18n(...)` invocation adds 501 minified bytes or
+170 gzip bytes. Alpha.1's constructible facade added 1,382 minified bytes or
+335 gzip bytes; removing `new I18n`, `instanceof`, receiver validation, and the
+redundant `.t` alias recovers 881 minified bytes and 165 gzip bytes.
 
 The eager/lazy size fixture intentionally contains only two very small
 messages per locale. In that fixture lazy mode adds about 530 gzip bytes to the

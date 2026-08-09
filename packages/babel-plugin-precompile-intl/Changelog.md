@@ -1,3 +1,8 @@
+# 1.0.0-alpha.2
+
+- No compiler changes; keep the monorepo release version synchronized with the
+  simplified callable runtime.
+
 # 1.0.0-alpha.1
 
 - No compiler changes; synchronized with the callable runtime release.

@@ -1,3 +1,9 @@
+## 1.0.0-alpha.2
+
+- Simplify callable `i18n(...)` instances following KISS/YAGNI: remove the
+  redundant `.t` spelling and constructor compatibility added in alpha.1.
+- Shrink the runtime facade and restore alpha.0-level hot-path performance.
+
 ## 1.0.0-alpha.1
 
 - Make request-scoped `i18n` instances directly callable in templates while

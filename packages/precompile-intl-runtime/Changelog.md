@@ -1,3 +1,14 @@
+## 1.0.0-alpha.2
+
+- Replace the over-engineered callable constructor facade with a small shared
+  forwarding layer over the request-scoped state core.
+- Remove the temporary `i18n.t`, runtime `I18n` constructor, `instanceof`, and
+  callable-instance provider overloads; use `i18n(...)` and
+  `provideI18n(options)` directly.
+- Reduce the callable overhead versus alpha.1 by 881 minified bytes and 165
+  gzip bytes while restoring translation and SSR performance to benchmark
+  noise relative to alpha.0.
+
 ## 1.0.0-alpha.1
 
 - Make each `I18n` instance directly callable as `i18n(key, values)`.

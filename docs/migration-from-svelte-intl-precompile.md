@@ -1,7 +1,7 @@
 # Migrating from `svelte-intl-precompile`
 
 > [!IMPORTANT]
-> This is a living migration guide for the `1.0.0-alpha.1` prerelease. The API
+> This is a living migration guide for the `1.0.0-alpha.2` prerelease. The API
 > examples below match the implementation and have been validated with the
 > published packages in a clean Svelte 5/Vite consumer.
 
@@ -177,8 +177,9 @@ plugin's `types` option or generation can be disabled with `types: false`.
 ```
 
 Call `useI18n()` once during component initialization. Do not call it from
-event handlers. `i18n.t(...)` remains an identical bound alias for code written
-against `1.0.0-alpha.0`, but direct invocation avoids template boilerplate.
+event handlers. If an earlier alpha used `i18n.t(...)`, remove `.t` and call
+`i18n(...)` directly. The redundant alias is intentionally not part of the
+stable API.
 
 ## 5. Changing locale
 
