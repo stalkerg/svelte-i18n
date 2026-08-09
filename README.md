@@ -31,6 +31,7 @@ licensing metadata and license files remain in their respective workspaces.
 - [Svelte 5 refactoring plan](docs/svelte5-refactoring-plan.md)
 - [Migration guide from `svelte-intl-precompile`](docs/migration-from-svelte-intl-precompile.md)
 - [Performance benchmarks](docs/benchmarks.md)
+- [Release checklist](docs/release-checklist.md)
 
 ## Development
 
@@ -40,11 +41,18 @@ root:
 ```sh
 npm install
 npm run check
+npm run test:e2e
+npm run test:pack
 ```
 
 `npm run check` builds all three workspaces and runs the shared Vitest suite.
 The runtime, compiler, and Vite integration are versioned together while the
 new contract is being stabilized.
+
+`npm run release:check` combines formatting, unit/integration tests, the
+production SvelteKit fixture, package-content validation, and an audit. The
+performance suite remains a separate explicit release step because its results
+depend on the host.
 
 Release-stabilization benchmarks can be reproduced with `npm run bench`. They
 compare the current runtime with the exact pre-refactor build preserved in this

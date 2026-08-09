@@ -121,6 +121,24 @@ export const load = (() => {
 {@render children()}
 ```
 
+To keep the browser document language synchronized during locale changes, opt
+in from the same layout:
+
+```svelte
+<script lang="ts">
+  import { syncDocumentLanguage } from '@stalkerg/svelte-icu';
+
+  // Call this after the provideI18n(...) shown above.
+  syncDocumentLanguage(i18n);
+</script>
+```
+
+The effect only runs in the browser. Render the initial `<html lang>` in
+`src/app.html` or a SvelteKit server hook so the SSR response is accessible
+before hydration. A `map` option can convert application locale identifiers to
+BCP 47 values, for example
+`syncDocumentLanguage(i18n, { map: (locale) => locale.replace('_', '-') })`.
+
 Use the instance from context once per component:
 
 ```svelte
@@ -147,5 +165,6 @@ See the migration guide for the complete eager and lazy SvelteKit examples.
 
 - [Svelte 5 refactoring plan](https://github.com/stalkerg/svelte-icu/blob/main/docs/svelte5-refactoring-plan.md)
 - [Migration from `svelte-intl-precompile`](https://github.com/stalkerg/svelte-icu/blob/main/docs/migration-from-svelte-intl-precompile.md)
+- [Release checklist](https://github.com/stalkerg/svelte-icu/blob/main/docs/release-checklist.md)
 
 The original project histories and licenses are preserved in the monorepo.

@@ -31,12 +31,14 @@ test('lazy catalog hydrates and client navigation loads another locale', async (
   await page.goto('/?locale=en');
   await expect(page.locator('#greeting')).toHaveText('Hello Browser');
   await expect(page.locator('body')).toHaveAttribute('data-hydrated', 'en:Hello Browser');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
   await page.locator('#japanese').click();
   await expect(page).toHaveURL(/locale=ja/);
   await expect(page.locator('#greeting')).toHaveText('こんにちは Browser');
   await expect(page.locator('#language')).toHaveText('日本語');
   await expect(page.locator('body')).toHaveAttribute('data-hydrated', 'ja:こんにちは Browser');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
 
   expect(consoleErrors.filter((message) => /hydration|mismatch/i.test(message))).toEqual([]);
 });

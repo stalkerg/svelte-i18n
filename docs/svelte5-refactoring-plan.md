@@ -1,6 +1,6 @@
 # Svelte 5 refactoring plan
 
-Status: active (M2–M5 implemented; M6 release hardening continues)
+Status: active (implementation complete; first alpha release remains)
 Target: first major release of the autonomous monorepo fork
 
 ## Why this is an architectural migration
@@ -142,7 +142,7 @@ Exit criteria: compiler output contains no dependency on global locale state.
 - [x] Add `createI18n`, `provideI18n`, `useI18n`, and `hasI18n`.
 - [x] Make locale transitions explicit through an async `setLocale` method.
 - [x] Protect locale loading from stale async completion.
-- [ ] Move `<html lang>` synchronization into an optional browser-side effect.
+- [x] Move `<html lang>` synchronization into an optional browser-side effect.
 
 Exit criteria: the primary entry point contains no Svelte stores or global
 mutable i18n state.
@@ -153,21 +153,45 @@ mutable i18n state.
 - [x] Support request-scoped eager catalogs for SSR.
 - [x] Define and test the lazy SSR/hydration strategy separately.
 - [x] Add parallel SSR tests with different locales and artificial delays.
-- [ ] Add a current SvelteKit example and Storybook production-build fixture.
-      (The production SvelteKit fixture is complete; Storybook remains.)
+- [x] Add a current production SvelteKit build fixture. Do not add Storybook:
+      the package has no visual components, and Storybook would duplicate a
+      client-only build path without exercising request-scoped SSR.
 
 Exit criteria: concurrent SSR responses never contain another request's
 locale, and hydration output matches server output.
 
 ### M6 — Compatibility and release
 
-- [ ] Decide whether a tree-shakeable `/legacy` store adapter is worth keeping.
+- [x] Do not ship a `/legacy` store adapter; see compatibility decisions below.
 - [x] Generate locale, message-key, and ICU value types.
 - [x] Validate packed artifacts in a clean Vite/Svelte 5 consumer project.
 - [x] Run bundle and SSR benchmarks against the baseline.
 - [x] Finish the migration guide.
-- [ ] Complete the release checklist.
+- [x] Document and automate the release checklist.
+- [ ] Execute the publication section of the checklist for `1.0.0-alpha.0`.
 - [ ] Publish the first major version with Svelte `^5` as a peer dependency.
+
+## Compatibility decisions
+
+### No `/legacy` adapter
+
+The first release will not include a store-based compatibility entry point.
+The old stores depend on a process-wide mutable singleton, which is precisely
+the request-isolation failure the new architecture removes. An adapter that
+kept those semantics would make unsafe SvelteKit code appear migrated; an
+adapter that required an `I18n` instance would not provide drop-in
+compatibility anyway. Omitting it also keeps the public surface and bundle
+smaller. Applications can use a temporary project-local wrapper while
+migrating components, but the library will expose only the instance API.
+
+### No Storybook fixture
+
+This library exposes state, compiler, and Vite integration rather than visual
+components. Its production SvelteKit fixture covers SSR, hydration, client
+navigation, lazy imports, generated types, and browser effects. A Storybook
+fixture would add a second framework toolchain but would not cover the most
+important failure mode: concurrent request isolation. It is therefore not a
+release requirement.
 
 ## Pull request sequence
 
@@ -179,7 +203,7 @@ locale, and hydration output matches server output.
 6. Request-scoped context and provider API.
 7. Locale loader and Vite virtual-module rewrite.
 8. SvelteKit SSR, hydration, and concurrency fixtures.
-9. Optional legacy adapter.
+9. Compatibility decisions and optional browser integration.
 10. Documentation, migration guide, package validation, and release.
 
 ## Definition of done

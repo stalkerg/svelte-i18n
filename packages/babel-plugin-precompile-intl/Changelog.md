@@ -1,3 +1,14 @@
+# 1.0.0-alpha.0
+
+- Rename the package to `@stalkerg/babel-plugin-precompile-intl` and publish it
+  from the autonomous `svelte-icu` monorepo.
+- Generate message functions with an explicit `(context, values)` contract
+  instead of reading mutable global locale and format state.
+- Replace sorted positional values with named ICU value objects.
+- Add message analysis used to generate required interpolation, plural,
+  select, number, date, and time types.
+- Correct ordinal plural handling and update the compiler toolchain.
+
 # 0.5.2
 - Fix edge case when two plurals are contiguous with nothing in between.
 

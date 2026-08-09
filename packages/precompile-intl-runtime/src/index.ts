@@ -1,5 +1,7 @@
 export { createI18n, I18n } from './i18n.svelte.js';
 export { hasI18n, provideI18n, useI18n } from './context.js';
+export { syncDocumentLanguage } from './document.svelte.js';
+export type { DocumentLanguageOptions } from './document.svelte.js';
 export {
   defaultFormats,
   getDateFormatter,

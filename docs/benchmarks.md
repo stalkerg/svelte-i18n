@@ -131,8 +131,8 @@ and named values instead of reading global state and relying on sorted
 positional arguments.
 
 The eager/lazy size fixture intentionally contains only two very small
-messages per locale. In that fixture lazy mode adds about 699 gzip bytes to the
-static root-layout graph and 210 gzip bytes for the selected English chunk;
+messages per locale. In that fixture lazy mode adds about 529 gzip bytes to the
+static root-layout graph and 428 gzip bytes for the selected English chunk;
 dynamic-import overhead is larger than the catalog being deferred. Therefore
 lazy mode should be selected to reduce a real application's large catalog
 payload, not assumed to be smaller for tiny catalogs. Eager remains the best

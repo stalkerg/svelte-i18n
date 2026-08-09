@@ -100,6 +100,37 @@ the initial props without Svelte's `state_referenced_locally` warning. The
 effect keeps the instance in sync if SvelteKit later replaces `data` during
 client-side navigation.
 
+### Optional `<html lang>` synchronization
+
+The old library changed the document language as a global side effect. The new
+runtime makes that behavior explicit and instance-scoped:
+
+```svelte
+<script lang="ts">
+  import { provideI18n, syncDocumentLanguage } from '@stalkerg/svelte-icu';
+  import { catalogs } from '$locales';
+
+  let { data } = $props();
+  const i18n = provideI18n(() => ({
+    locale: data.locale,
+    messages: catalogs,
+  }));
+  syncDocumentLanguage(i18n);
+</script>
+```
+
+Call `syncDocumentLanguage` during component initialization. It registers a
+Svelte effect, follows `i18n.locale`, and is tree-shaken when unused. The effect
+does not execute during SSR, so continue to render an initial language in
+`src/app.html` or with a SvelteKit server hook. Applications whose locale IDs
+are not BCP 47 tags can map them explicitly:
+
+```ts
+syncDocumentLanguage(i18n, {
+  map: (locale) => locale.replace('_', '-'),
+});
+```
+
 ### Generated types
 
 The Vite plugin generates `src/svelte-icu.d.ts` from all locale files. Commit
@@ -344,10 +375,11 @@ For pure translation tests, create an isolated instance directly with
 - Translation values are passed as an object rather than sorted positional
   function arguments.
 - The library no longer changes `<html lang>` as an unconditional side effect.
-  Set it explicitly in application code while the optional provider effect is
-  still pending.
+  Use the optional `syncDocumentLanguage` effect when desired.
 - `registerAll()` is removed. `$locales` now exports `availableLocales`,
   `catalogs`, and `loaders`.
+- There is intentionally no `/legacy` store adapter. Keeping global mutable
+  stores would preserve the SSR isolation problem this fork fixes.
 - Svelte 3 and Svelte 4 support is not part of the new primary API.
 
 ## Migration checklist
@@ -358,6 +390,8 @@ For pure translation tests, create an isolated instance directly with
 - [ ] Replace store imports with one `useI18n()` call per component.
 - [ ] Replace `$t(...)` with `i18n.t(...)`.
 - [ ] Replace `$locale = value` with `i18n.setLocale(value)`.
+- [ ] Opt in to `syncDocumentLanguage` or manage `<html lang>` in application
+      code.
 - [ ] Move custom formats and runtime messages to the instance.
 - [ ] Generate and commit `src/svelte-icu.d.ts`.
 - [ ] Fix newly reported unknown locale, message key, and ICU value errors.

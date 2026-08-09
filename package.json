@@ -18,6 +18,7 @@
     "test": "npm run build && vitest run",
     "test:e2e:build": "npm run build && node scripts/build-e2e-fixture.mjs && svelte-check --workspace packages/svelte-intl-precompile/tests/fixtures/sveltekit-lazy --tsconfig ./tsconfig.json",
     "test:e2e": "npm run test:e2e:build && playwright test",
+    "test:pack": "npm run build && node scripts/validate-release.mjs",
     "test:watch": "vitest",
     "bench:prepare": "node scripts/prepare-benchmark-baseline.mjs",
     "bench:runtime": "npm run build && npm run bench:prepare && vitest bench --run benchmarks/runtime.bench.ts --outputJson .benchmark-results/runtime.json",
@@ -27,7 +28,8 @@
     "bench": "npm run bench:runtime && npm run bench:ssr && npm run bench:memory && npm run bench:size",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run format:check && npm run test"
+    "check": "npm run format:check && npm run test",
+    "release:check": "npm run check && npm run test:e2e && npm run test:pack && npm audit --audit-level=low"
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",

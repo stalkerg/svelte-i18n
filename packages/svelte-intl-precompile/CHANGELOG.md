@@ -1,3 +1,15 @@
+## 1.0.0-alpha.0
+
+- Continue the project as `@stalkerg/svelte-icu` in an autonomous monorepo.
+- Require Svelte 5 and replace global stores with request-scoped `I18n`
+  instances exposed through `createI18n`, `provideI18n`, and `useI18n`.
+- Add eager and lazy Vite catalogs with production SvelteKit SSR/hydration
+  support.
+- Generate locale, message-key, and ICU argument types from catalog files.
+- Add an opt-in `syncDocumentLanguage` browser effect; document that no legacy
+  store adapter is provided.
+- Update the compiler, runtime, Vite, SvelteKit, test, and build dependencies.
+
 ## 0.12.0
 - Now the `$date`, `$time` and `$number` stores automatically update when the current locale changes.
 ## 0.11.0

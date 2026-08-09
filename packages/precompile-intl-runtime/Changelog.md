@@ -1,4 +1,15 @@
-## next
+## 1.0.0-alpha.0
+
+- Require Svelte 5 and replace process-wide stores with reactive,
+  request/component-tree scoped `I18n` instances.
+- Pass locale, formats, catalogs, loading, and errors through explicit instance
+  state so concurrent SSR requests remain isolated.
+- Add instance-safe lazy catalog loading, stale transition protection, and
+  shared immutable `Intl` caches.
+- Add typed locale/message APIs and the optional `syncDocumentLanguage` browser
+  effect.
+- Remove the legacy singleton store API.
+
 ## 0.8.1
 - Don't set `document.lang` if the value being set is an empty string.
 ## 0.8.0
