@@ -1,0 +1,10 @@
+import { LocaleDictionary, DeepDictionary, Dictionary } from '../types/index.js';
+declare const $dictionary: import("svelte/store").Writable<Dictionary>;
+export declare function getLocaleDictionary(locale: string): LocaleDictionary;
+export declare function getDictionary(): Dictionary;
+export declare function hasLocaleDictionary(locale: string): boolean;
+export declare function getMessageFromDictionary(locale: string, id: string): any;
+export declare function getClosestAvailableLocale(refLocale: string): string | null;
+export declare function addMessages(locale: string, ...partials: DeepDictionary[]): void;
+declare const $locales: import("svelte/store").Readable<string[]>;
+export { $dictionary, $locales };

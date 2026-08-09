@@ -1,0 +1,45 @@
+{
+  "name": "precompile-intl-runtime",
+  "version": "0.8.5",
+  "description": "Runtime helpers to be used in translations precompiled by babel-plugin-precompile-intl",
+  "repository": "https://github.com/cibernox/precompile-intl-runtime",
+  "author": {
+    "name": "Miguel Camba",
+    "email": "miguel.camba@gmail.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
+    "test": "TZ=utc jest test",
+    "prepublish": "npm run build"
+  },
+  "main": "dist/commonjs/index.js",
+  "module": "dist/modules/index.js",
+  "types": "dist/modules/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/modules/index.js",
+      "require": "./dist/commonjs/index.js",
+      "default": "./dist/modules/index.js"
+    }
+  },
+  "peerDependencies": {
+    "svelte": "^3.37.0 || ^4.0.0"
+  },
+  "keywords": [
+    "helpers",
+    "Intl",
+    "precompile",
+    "runtime",
+    "i18n"
+  ],
+  "devDependencies": {
+    "@babel/preset-env": "^7.13.0",
+    "@rollup/plugin-typescript": "^8.3.0",
+    "babel-jest": "^27.3.0",
+    "jest": "^27.3.0",
+    "svelte": "^3.44.0",
+    "typescript": "^4.5.0"
+  }
+}
