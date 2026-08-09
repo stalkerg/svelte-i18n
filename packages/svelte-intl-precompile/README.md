@@ -4,7 +4,7 @@ Native Svelte 5 internationalization with ICU messages compiled at build time.
 This is the autonomous, request-safe continuation of
 `svelte-intl-precompile`.
 
-> The Svelte 5 API is currently an unreleased alpha.
+> The Svelte 5 API is currently available as the `next` prerelease.
 
 ## Why precompile messages?
 

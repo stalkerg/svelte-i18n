@@ -35,8 +35,8 @@ licensing metadata and license files remain in their respective workspaces.
 
 ## Development
 
-The Svelte 5 refactor is currently an unreleased alpha. From the repository
-root:
+The first Svelte 5 alpha is published as `@stalkerg/svelte-icu@next`. From the
+repository root:
 
 ```sh
 npm install

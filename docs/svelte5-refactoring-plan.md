@@ -1,6 +1,6 @@
 # Svelte 5 refactoring plan
 
-Status: active (implementation complete; first alpha release remains)
+Status: `1.0.0-alpha.0` published; stable `1.0.0` awaits alpha feedback
 Target: first major release of the autonomous monorepo fork
 
 ## Why this is an architectural migration
@@ -168,8 +168,9 @@ locale, and hydration output matches server output.
 - [x] Run bundle and SSR benchmarks against the baseline.
 - [x] Finish the migration guide.
 - [x] Document and automate the release checklist.
-- [ ] Execute the publication section of the checklist for `1.0.0-alpha.0`.
-- [ ] Publish the first major version with Svelte `^5` as a peer dependency.
+- [x] Execute the publication section of the checklist for `1.0.0-alpha.0`.
+- [x] Publish the first public alpha with Svelte `^5` as a peer dependency.
+- [ ] Promote the tested prerelease to stable `1.0.0` after alpha feedback.
 
 ## Compatibility decisions
 

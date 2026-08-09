@@ -1,8 +1,15 @@
 # Release checklist
 
 The three packages form one product and use the same version. The first public
-release is `1.0.0-alpha.0` under the npm `next` dist-tag; `latest` is reserved
-for the later stable `1.0.0` release.
+release, `1.0.0-alpha.0`, was published on 2026-08-09. The intended prerelease
+channel is the npm `next` dist-tag. npm also initialized `latest` to this first
+version because no stable version existed; subsequent prereleases must use
+`next`, and stable `1.0.0` will replace `latest`.
+
+The registry release was installed without npm credentials in an empty Vite
+project. Its production build, `svelte-check`, dependency deduplication, and
+generated locale/message/value types all passed before the Git tag and GitHub
+prerelease were created.
 
 ## Automated gate
 

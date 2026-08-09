@@ -1,9 +1,9 @@
 # Migrating from `svelte-intl-precompile`
 
 > [!IMPORTANT]
-> This is a living migration guide for an unreleased alpha. The API examples
-> below match the implementation and have been validated with packed packages
-> in a clean Svelte 5/Vite consumer.
+> This is a living migration guide for the `1.0.0-alpha.0` prerelease. The API
+> examples below match the implementation and have been validated with the
+> published packages in a clean Svelte 5/Vite consumer.
 
 The new library keeps build-time ICU compilation but replaces global Svelte
 stores with a request-scoped Svelte 5 `I18n` instance.
