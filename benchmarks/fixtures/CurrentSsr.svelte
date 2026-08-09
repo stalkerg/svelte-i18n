@@ -12,5 +12,5 @@
 </script>
 
 {#each Array.from({ length: 25 }) as _, index}
-  <p>{i18n.t('greeting', { name: index })}: {i18n.t('items', { count: index })}</p>
+  <p>{i18n('greeting', { name: index })}: {i18n('items', { count: index })}</p>
 {/each}

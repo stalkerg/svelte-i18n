@@ -1,6 +1,6 @@
 # Svelte 5 refactoring plan
 
-Status: `1.0.0-alpha.0` published; stable `1.0.0` awaits alpha feedback
+Status: `1.0.0-alpha.1` callable API; stable `1.0.0` awaits alpha feedback
 Target: first major release of the autonomous monorepo fork
 
 ## Why this is an architectural migration
@@ -52,7 +52,7 @@ component-tree/request-scoped mutable data
   const i18n = useI18n();
 </script>
 
-<h1>{i18n.t('welcome', { name: 'Alex' })}</h1>
+<h1>{i18n('welcome', { name: 'Alex' })}</h1>
 <button onclick={() => i18n.setLocale('ja')}>Japanese</button>
 ```
 
@@ -84,7 +84,7 @@ No compiled helper may read a global current locale or global format options.
 - Cache `Intl.NumberFormat`, `Intl.DateTimeFormat`, and `Intl.PluralRules`
   process-wide using keys that include locale and options.
 - Resolve Svelte context once during component initialization, never inside
-  every `t()` call.
+  every translation call.
 - Do not keep request instances in a process-wide map.
 - Do not use `AsyncLocalStorage` for normal translation calls.
 
@@ -96,8 +96,8 @@ Performance budgets:
 - no retained request instance after its component tree is released.
 
 The reproducible measurements and current results are recorded in
-[Performance benchmarks](benchmarks.md). The representative runtime mix is 20%
-faster than the historical build, warm SSR is 34% faster, concurrent locale
+[Performance benchmarks](benchmarks.md). The representative runtime mix is 22%
+faster than the historical build, warm SSR is 27% faster, concurrent locale
 imports remain deduplicated, and the memory harness found no measurable
 request-instance retention after release.
 
@@ -140,6 +140,8 @@ Exit criteria: compiler output contains no dependency on global locale state.
 - [x] Implement `I18n` in a `.svelte.ts` module.
 - [x] Use `$state.raw` for immutable catalog references and overlays.
 - [x] Add `createI18n`, `provideI18n`, `useI18n`, and `hasI18n`.
+- [x] Expose the instance as a callable function with `.t` as a compatible
+      alias, without a `Proxy` or store subscription.
 - [x] Make locale transitions explicit through an async `setLocale` method.
 - [x] Protect locale loading from stale async completion.
 - [x] Move `<html lang>` synchronization into an optional browser-side effect.
@@ -200,7 +202,7 @@ release requirement.
 2. Green baseline tests and benchmarks.
 3. Pure runtime with explicit context.
 4. Compiler contract v2.
-5. Svelte 5 `I18n` state class.
+5. Svelte 5 `I18n` state core and callable facade.
 6. Request-scoped context and provider API.
 7. Locale loader and Vite virtual-module rewrite.
 8. SvelteKit SSR, hydration, and concurrency fixtures.

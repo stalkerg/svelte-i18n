@@ -1,3 +1,10 @@
+## 1.0.0-alpha.1
+
+- Make request-scoped `i18n` instances directly callable in templates while
+  preserving typed ICU values and the existing `.t` alias.
+- Reduce the common translation form to `i18n('key', values)` without bringing
+  back Svelte stores or global state.
+
 ## 1.0.0-alpha.0
 
 - Continue the project as `@stalkerg/svelte-icu` in an autonomous monorepo.

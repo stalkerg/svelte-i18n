@@ -1,6 +1,6 @@
 {
   "name": "@stalkerg/svelte-icu",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "I18n library for Svelte.js that analyzes your keys at build time for max performance and minimal footprint",
   "type": "module",
   "module": "index.js",
@@ -57,10 +57,10 @@
   "license": "ISC",
   "dependencies": {
     "@babel/core": "^8.0.1",
-    "@stalkerg/babel-plugin-precompile-intl": "1.0.0-alpha.0",
+    "@stalkerg/babel-plugin-precompile-intl": "1.0.0-alpha.1",
     "js-yaml": "^5.2.3",
     "json5": "^2.2.3",
-    "@stalkerg/precompile-intl-runtime": "1.0.0-alpha.0",
+    "@stalkerg/precompile-intl-runtime": "1.0.0-alpha.1",
     "strip-bom": "^5.0.0"
   },
   "publishConfig": {

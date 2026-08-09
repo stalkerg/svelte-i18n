@@ -5,4 +5,4 @@
   const i18n = useI18n();
 </script>
 
-<p lang={i18n.locale}>{i18n.t('greeting', { name })}</p>
+<p lang={i18n.locale}>{i18n('greeting', { name })}</p>

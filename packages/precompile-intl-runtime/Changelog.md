@@ -1,3 +1,10 @@
+## 1.0.0-alpha.1
+
+- Make each `I18n` instance directly callable as `i18n(key, values)`.
+- Keep `i18n.t` as the same bound function for alpha.0 compatibility.
+- Implement the facade without a `Proxy` and distinguish callable instances
+  from provider option callbacks.
+
 ## 1.0.0-alpha.0
 
 - Require Svelte 5 and replace process-wide stores with reactive,

@@ -16,7 +16,7 @@ export function createInstances(count: number, translate: boolean): unknown[] {
       warnOnMissingMessages: false,
     });
     if (translate) {
-      for (let index = 0; index < 20; index += 1) instance.t(`message.${index}`);
+      for (let index = 0; index < 20; index += 1) instance(`message.${index}`);
     }
     return instance;
   });

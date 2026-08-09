@@ -8,6 +8,8 @@ import {
   createI18n,
   defaultFormats,
   getLocaleFromAcceptLanguageHeader,
+  I18n,
+  isI18n,
   type Catalog,
   type MessageContext,
 } from '../dist/modules/index.js';
@@ -83,16 +85,32 @@ describe('request-scoped I18n instances', () => {
     },
   } satisfies Record<string, Catalog>;
 
+  it('is directly callable and keeps t as an identical bound alias', () => {
+    const i18n = createI18n({ locale: 'en', messages });
+    const t = i18n.t;
+
+    expect(typeof i18n).toBe('function');
+    expect(i18n('greeting', { name: 'Direct' })).toBe('Hello Direct');
+    expect(t('greeting', { name: 'Alias' })).toBe('Hello Alias');
+    expect(i18n.t).toBe(i18n);
+    expect(i18n).toBeInstanceOf(I18n);
+    expect(isI18n(i18n)).toBe(true);
+    expect(i18n.formatNumber(1_234)).toBe('1,234');
+
+    const constructed = new I18n({ locale: 'ja', messages });
+    expect(constructed('greeting', { name: 'Constructor' })).toBe('こんにちは Constructor');
+  });
+
   it('does not share locale or overlays between instances', async () => {
     const first = createI18n({ locale: 'en', messages });
     const second = createI18n({ locale: 'ja', messages });
 
-    expect(first.t('greeting', { name: 'Alex' })).toBe('Hello Alex');
-    expect(second.t('greeting', { name: 'Alex' })).toBe('こんにちは Alex');
+    expect(first('greeting', { name: 'Alex' })).toBe('Hello Alex');
+    expect(second('greeting', { name: 'Alex' })).toBe('こんにちは Alex');
 
     first.addMessages('en', { private: 'request A' });
-    expect(first.t('private')).toBe('request A');
-    expect(second.t('private', {}, { default: 'missing' })).toBe('missing');
+    expect(first('private')).toBe('request A');
+    expect(second('private', {}, { default: 'missing' })).toBe('missing');
 
     await first.setLocale('ja');
     expect(first.locale).toBe('ja');
@@ -116,8 +134,8 @@ describe('request-scoped I18n instances', () => {
 
     await Promise.all([first.setLocale('fr'), second.setLocale('fr')]);
     expect(loader).toHaveBeenCalledTimes(1);
-    expect(first.t('greeting')).toBe('Bonjour');
-    expect(second.t('greeting')).toBe('Bonjour');
+    expect(first('greeting')).toBe('Bonjour');
+    expect(second('greeting')).toBe('Bonjour');
     expect(first.isLoading).toBe(false);
     expect(second.isLoading).toBe(false);
   });
@@ -134,7 +152,7 @@ describe('request-scoped I18n instances', () => {
     await i18n.setLocale('ja');
 
     expect(loader).not.toHaveBeenCalled();
-    expect(i18n.t('greeting')).toBe('Preloaded result');
+    expect(i18n('greeting')).toBe('Preloaded result');
   });
 
   it('invalidates cached hits and misses when catalogs change', () => {
@@ -144,15 +162,15 @@ describe('request-scoped I18n instances', () => {
       warnOnMissingMessages: false,
     });
 
-    expect(i18n.t('existing')).toBe('Base value');
-    expect(i18n.t('late')).toBe('late');
+    expect(i18n('existing')).toBe('Base value');
+    expect(i18n('late')).toBe('late');
 
     i18n.addMessages('en', { existing: 'Overlay value', late: 'Added later' });
-    expect(i18n.t('existing')).toBe('Overlay value');
-    expect(i18n.t('late')).toBe('Added later');
+    expect(i18n('existing')).toBe('Overlay value');
+    expect(i18n('late')).toBe('Added later');
 
     i18n.setMessages('ja', { existing: 'Loaded value' });
-    expect(i18n.t('existing', {}, { locale: 'ja' })).toBe('Loaded value');
+    expect(i18n('existing', {}, { locale: 'ja' })).toBe('Loaded value');
   });
 
   it('does not let a stale loader completion change the selected locale', async () => {
@@ -176,7 +194,7 @@ describe('request-scoped I18n instances', () => {
     await staleTransition;
 
     expect(i18n.locale).toBe('fr');
-    expect(i18n.t('value')).toBe('Français');
+    expect(i18n('value')).toBe('Français');
   });
 });
 

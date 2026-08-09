@@ -19,7 +19,7 @@ change each other's language.
 ## Install
 
 ```sh
-npm install @stalkerg/svelte-icu
+npm install @stalkerg/svelte-icu@next
 ```
 
 Svelte `^5.0.0` is required.
@@ -58,8 +58,8 @@ The declaration derives:
 - `Locale` from locale filenames;
 - `MessageKey` from flattened catalog keys;
 - `MessageValuesFor<Key>` from ICU arguments;
-- typed `i18n.t()`, locale transitions, `availableLocales`, `catalogs`, and
-  `loaders`.
+- a typed callable `i18n`, locale transitions, `availableLocales`, `catalogs`,
+  and `loaders`.
 
 ```ts
 import type { Locale, MessageKey, MessageValuesFor } from '$locales';
@@ -68,8 +68,8 @@ const locale: Locale = 'en';
 const key: MessageKey = 'cats';
 const values: MessageValuesFor<'cats'> = { count: 2 };
 
-i18n.t(key, values);
-i18n.t('hello', { name: 'Alex' });
+i18n(key, values);
+i18n('hello', { name: 'Alex' });
 ```
 
 Plural and number arguments are inferred as `number`; date and time arguments
@@ -147,9 +147,12 @@ Use the instance from context once per component:
   const i18n = useI18n();
 </script>
 
-<h1>{i18n.t('hello', { name: 'Alex' })}</h1>
+<h1>{i18n('hello', { name: 'Alex' })}</h1>
 <button onclick={() => i18n.setLocale('ja')}>日本語</button>
 ```
+
+`i18n.t(...)` remains an identical, bound alias for applications already using
+the first alpha, but direct invocation is the canonical API.
 
 ## Lazy SSR
 

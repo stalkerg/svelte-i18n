@@ -67,18 +67,18 @@ function repeat100(callback: (index: number) => string): string {
 
 describe('1,000 translations per sample', () => {
   bench('legacy: cached plain lookup', () => repeat(() => legacyTranslate('plain')));
-  bench('current: cached plain lookup', () => repeat(() => current.t('plain')));
+  bench('current: cached plain lookup', () => repeat(() => current('plain')));
 
   bench('legacy: interpolation', () =>
     repeat((index) => legacyTranslate('greeting', { values: { name: index } })),
   );
-  bench('current: interpolation', () => repeat((index) => current.t('greeting', { name: index })));
+  bench('current: interpolation', () => repeat((index) => current('greeting', { name: index })));
 
   bench('legacy: cardinal plural', () =>
     repeat((index) => legacyTranslate('items', { values: { count: index % 5 } })),
   );
   bench('current: cardinal plural', () =>
-    repeat((index) => current.t('items', { count: index % 5 })),
+    repeat((index) => current('items', { count: index % 5 })),
   );
 
   bench('legacy: representative mix', () =>
@@ -101,15 +101,15 @@ describe('1,000 translations per sample', () => {
     repeat((index) => {
       switch (index % 5) {
         case 0:
-          return current.t('plain');
+          return current('plain');
         case 1:
-          return current.t('greeting', { name: index });
+          return current('greeting', { name: index });
         case 2:
-          return current.t('items', { count: index % 5 });
+          return current('items', { count: index % 5 });
         case 3:
-          return current.t('amount', { amount: 12_345.67 + index });
+          return current('amount', { amount: 12_345.67 + index });
         default:
-          return current.t('published', { date: date.valueOf() + index });
+          return current('published', { date: date.valueOf() + index });
       }
     }),
   );
@@ -120,7 +120,7 @@ describe('100 Intl formats per sample', () => {
     repeat100((index) => legacyTranslate('amount', { values: { amount: 12_345.67 + index } })),
   );
   bench('current: number', () =>
-    repeat100((index) => current.t('amount', { amount: 12_345.67 + index })),
+    repeat100((index) => current('amount', { amount: 12_345.67 + index })),
   );
   bench('legacy: date', () =>
     repeat100((index) =>
@@ -128,7 +128,7 @@ describe('100 Intl formats per sample', () => {
     ),
   );
   bench('current: date', () =>
-    repeat100((index) => current.t('published', { date: date.valueOf() + index })),
+    repeat100((index) => current('published', { date: date.valueOf() + index })),
   );
 });
 

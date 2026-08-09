@@ -1,7 +1,7 @@
 # Migrating from `svelte-intl-precompile`
 
 > [!IMPORTANT]
-> This is a living migration guide for the `1.0.0-alpha.0` prerelease. The API
+> This is a living migration guide for the `1.0.0-alpha.1` prerelease. The API
 > examples below match the implementation and have been validated with the
 > published packages in a clean Svelte 5/Vite consumer.
 
@@ -13,8 +13,8 @@ stores with a request-scoped Svelte 5 `I18n` instance.
 | Old API                         | New API                                         |
 | ------------------------------- | ----------------------------------------------- |
 | `init(options)`                 | `createI18n(options)` or `provideI18n(options)` |
-| `{$t('key')}`                   | `{i18n.t('key')}`                               |
-| `{$t('key', { values })}`       | `{i18n.t('key', values)}`                       |
+| `{$t('key')}`                   | `{i18n('key')}`                                 |
+| `{$t('key', { values })}`       | `{i18n('key', values)}`                         |
 | `$locale = 'ja'`                | `await i18n.setLocale('ja')`                    |
 | `addMessages(locale, messages)` | `i18n.addMessages(locale, messages)`            |
 | `register(locale, loader)`      | configure `loaders` on the instance             |
@@ -31,7 +31,7 @@ The new primary API targets Svelte 5 and runes mode. Svelte 3 and Svelte 4 are
 not supported by the primary entry point.
 
 ```sh
-npm install @stalkerg/svelte-icu
+npm install @stalkerg/svelte-icu@next
 ```
 
 ## 2. Vite configuration
@@ -136,7 +136,7 @@ syncDocumentLanguage(i18n, {
 The Vite plugin generates `src/svelte-icu.d.ts` from all locale files. Commit
 the generated declaration so `svelte-check` and editors can use it before a
 Vite dev server starts. It provides `Locale`, `MessageKey`, and
-`MessageValuesFor<Key>` and narrows `i18n.t()` automatically:
+`MessageValuesFor<Key>` and narrows callable `i18n` instances automatically:
 
 ```ts
 import type { Locale, MessageKey, MessageValuesFor } from '$locales';
@@ -145,7 +145,7 @@ const locale: Locale = 'en';
 const key: MessageKey = 'welcome';
 const values: MessageValuesFor<'welcome'> = { name: 'Alex' };
 
-i18n.t(key, values);
+i18n(key, values);
 ```
 
 After adding or removing locale messages, start Vite or run a production build
@@ -173,11 +173,12 @@ plugin's `types` option or generation can be disabled with `types: false`.
   const i18n = useI18n();
 </script>
 
-<h1>{i18n.t('welcome', { name: 'Alex' })}</h1>
+<h1>{i18n('welcome', { name: 'Alex' })}</h1>
 ```
 
 Call `useI18n()` once during component initialization. Do not call it from
-event handlers or from `i18n.t()` wrappers created after initialization.
+event handlers. `i18n.t(...)` remains an identical bound alias for code written
+against `1.0.0-alpha.0`, but direct invocation avoids template boilerplate.
 
 ## 5. Changing locale
 
@@ -388,7 +389,7 @@ For pure translation tests, create an isolated instance directly with
 - [ ] Move the i18n plugin to `vite.config.ts`.
 - [ ] Replace global `init` with `provideI18n` in the root layout.
 - [ ] Replace store imports with one `useI18n()` call per component.
-- [ ] Replace `$t(...)` with `i18n.t(...)`.
+- [ ] Replace `$t(...)` with `i18n(...)`.
 - [ ] Replace `$locale = value` with `i18n.setLocale(value)`.
 - [ ] Opt in to `syncDocumentLanguage` or manage `<html lang>` in application
       code.

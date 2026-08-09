@@ -1,3 +1,7 @@
+# 1.0.0-alpha.1
+
+- No compiler changes; synchronized with the callable runtime release.
+
 # 1.0.0-alpha.0
 
 - Rename the package to `@stalkerg/babel-plugin-precompile-intl` and publish it
